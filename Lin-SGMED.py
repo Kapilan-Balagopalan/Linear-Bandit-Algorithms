@@ -58,7 +58,18 @@ def calc_gamma_t(t,d,sVal_lambda,delta,S):
     return gamma_t
 
 def calc_MED_probability_distribution(Delta_empirical_gap,mVal_lvrg_scr_orgn_inv_t, A, empirical_best_arm, gamma_t):
-    return 0
+    K,d = A.shape
+    MED_quo = np.zeros(K)
+    a = A[empirical_best_arm, :]
+    vVal_lev_score_emp_best = np.matmul(np.matmul(a.T, mVal_lvrg_scr_orgn_inv_t), a)
+    #print(a.shape)
+    for i in range(K):
+        a = A[i,:]
+        vVal_lev_score_a = np.matmul(np.matmul(a.T,mVal_lvrg_scr_orgn_inv_t),a)
+        MED_quo[i] = np.exp(-(Delta_empirical_gap[i])**2/(gamma_t*(vVal_lev_score_a + vVal_lev_score_emp_best)))
+    return MED_quo
+
+
 
 def Lin_SGMED_algo_main():
     d, K ,n, sVal_lambda, mVal_I, mVal_lvrg_scr_orgn, A , theta_true,noise_sigma,delta,S= init()
@@ -106,11 +117,7 @@ def Lin_SGMED_algo_main():
         gamma_t = calc_gamma_t(t,d,sVal_lambda,delta,S)
         print(gamma_t)
         MED_quo = calc_MED_probability_distribution(Delta_empirical_gap,mVal_lvrg_scr_orgn_inv_t, A, empirical_best_arm, gamma_t)
-        print(MED_quo)
-
-
-
-
+        #print(MED_quo)
 
 
 
