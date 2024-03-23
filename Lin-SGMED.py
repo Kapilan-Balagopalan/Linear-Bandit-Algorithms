@@ -106,6 +106,7 @@ def Lin_SGMED_algo_main():
         gamma_t = calc_gamma_t(t,d,sVal_lambda,delta,S)
         print(gamma_t)
         MED_quo = calc_MED_probability_distribution(Delta_empirical_gap,mVal_lvrg_scr_orgn_inv_t, A, empirical_best_arm, gamma_t)
+        print(MED_quo)
 
 
 
