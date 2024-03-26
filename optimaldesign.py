@@ -102,12 +102,14 @@ def optimal_design_algo(X):
     V_t = V_KY
     # print(V_t)
     counter = 0
-    V_t_inv = np.linalg.inv(V_t)
+    #print(accept)
+    #print(np.linalg.det(V_t))
+    V_t_inv = np.linalg.pinv(V_t)
     max_arm_ind, max_lev_score = find_max_norm_arm(X, V_t_inv)
     x = X[max_arm_ind, :]
     while max_lev_score > 1:
         V_t = V_t + np.outer(x, x)
-        V_t_inv = np.linalg.inv(V_t)
+        V_t_inv = np.linalg.pinv(V_t)
         max_arm_ind, max_lev_score = find_max_norm_arm(X, V_t_inv)
         x = X[max_arm_ind, :]
         # print(max_lev_score)
