@@ -30,7 +30,7 @@ class Lin_SGMED(Bandit):
         self.X = X
         self.R = R
         self.lam = lam
-        self.delta = .2
+        self.delta = .01
         self.S = S
         self.flags = flags
         self.multiplier = float(multiplier)
@@ -65,9 +65,10 @@ class Lin_SGMED(Bandit):
         self.empirical_best_ind = np.zeros(self.K)
         self.Delta_empirical_gap = np.ones(self.K)
         self.empirical_best_arm = 0
+        self.gamma_t = 0
 
     def next_arm(self):
-        valid_idx = np.setdiff1d(np.arange(self.K), self.do_not_ask)
+        #valid_idx = np.setdiff1d(np.arange(self.K), self.do_not_ask)
         if (self.t == 1):
             prob_dist = calc_q_opt_design(self.AugX)
 
@@ -150,7 +151,7 @@ class Lin_SGMED(Bandit):
 
         self.calc_MED_ver1_probability_distribution()
         self.scale_arms()
-
+        self.gamma_t = calc_gamma_t(self.t,self.d,self.lam,self.delta,self.S,self.R)
         self.t = self.t +  1
 
     def getDoNotAsk(self):

@@ -22,6 +22,9 @@ def calc_regret(chosen_arm, theta_true, A):
     # print(inst_regret)
     return inst_regret
 
+def calc_gamma_t(t,d,sVal_lambda,delta,S,noise_sigma):
+    gamma_t = (noise_sigma*np.sqrt(d*np.log(1 + t/(sVal_lambda*d)) + 2*np.log(2/delta)) + np.sqrt(sVal_lambda)*S)**2
+    return gamma_t
 def receive_reward(chosen,theta_true, noise_sigma, A):
     #print(Arm_t.shape)
     #print(theta_true.shape)
