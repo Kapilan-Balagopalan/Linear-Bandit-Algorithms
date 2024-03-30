@@ -11,45 +11,52 @@ from Lin_SGMED_ver1 import *
 
 from OFUL import *
 
-def init_end_of_optimism(eps):
-    #np.random.seed(seed)
-    noise_sigma = 0.1
+
+def init(seed,K,n,d):
+    np.random.seed(seed)
+    noise_sigma = 1
     delta = 0.01
     S = 1
-    sVal_dimension = d = 2
-    sVal_arm_size = K = 3
-    sVal_horizon = n = 1000
+    sVal_dimension = d
+    sVal_arm_size = K
+    sVal_horizon = n
     sVal_lambda = d
     mVal_I = np.eye(sVal_dimension)
     mVal_lvrg_scr_orgn = sVal_lambda*mVal_I
-    sVal_arm_set = A = sample_end_of_optimism(eps)
-    theta_true = A[0,:]
+    sVal_arm_set = A = sample_random(sVal_arm_size,sVal_dimension)
+    theta_true = np.random.randn(d, 1)
     #print(theta_true.shape)
     #print(A.shape)
-    #theta_true = S*(theta_true/ (np.linalg.norm(theta_true, axis=0)))
-    best_arm = A[0,:]
+    theta_true = S*(theta_true/ (np.linalg.norm(theta_true, axis=0)))
+    best_arm = np.argmax(np.matmul(A, theta_true))
     # print(best_arm)
     return sVal_dimension, sVal_arm_size,sVal_horizon, sVal_lambda, mVal_I, mVal_lvrg_scr_orgn, sVal_arm_set, theta_true,\
            noise_sigma, delta, S, best_arm
 
 
-eps = 0.01
-d, K ,n, sVal_lambda, mVal_I, mVal_lvrg_scr_orgn, X , theta_true,noise_sigma,delta,S,best_arm = init_end_of_optimism(eps)
-R = noise_sigma
-linSGMED_inst = Lin_SGMED(X, sVal_lambda , R , S , flags=None, subsample_func=None, subsample_rate=1.0, multiplier=1.0)
-lam = 1/(S**2)
-OFUL_inst = Oful(X,  lam , R , S , flags=None, subsample_func=None, subsample_rate=1.0, multiplier=1.0)
 
 
+
+
+K = 100
+n = 4000
+d = 15
 
 acc_regret_linSGMED = 0
 acc_regret_OFUL  = 0
-n_trials = 100
+n_trials = 20
 acc_regret_arr_linSGMED = np.zeros((n_trials,n))
 acc_regret_arr_OFUL = np.zeros((n_trials,n))
 
 
 for j in range(n_trials):
+    seed = np.random.randint(1,15751)
+    d, K, n, sVal_lambda, mVal_I, mVal_lvrg_scr_orgn, X, theta_true, noise_sigma, delta, S, best_arm = init(seed,K,n,d)
+    R = noise_sigma
+    linSGMED_inst = Lin_SGMED(X, sVal_lambda, R, S, flags=None, subsample_func=None, subsample_rate=1.0, multiplier=1.0)
+    lam = 1 / (S ** 2)
+    OFUL_inst = Oful(X, lam, R, S, flags=None, subsample_func=None, subsample_rate=1.0, multiplier=1.0)
+    R = noise_sigma
     acc_regret_linSGMED = 0
     acc_regret_OFUL = 0
     for t in range(n):
@@ -74,12 +81,12 @@ for j in range(n_trials):
 
 t_alpha = 1.66
 
-acc_regret_arr_linSGMED_mean = np.mean(acc_regret_arr_linSGMED, axis=0)
+acc_regret_arr_linSGMED_mean = np.sum(acc_regret_arr_linSGMED, axis=0)/n_trials
 acc_regret_arr_linSGMED_std = np.std(acc_regret_arr_linSGMED, axis=0, ddof=1)
 acc_regret_arr_linSGMED_confidence_up = acc_regret_arr_linSGMED_mean + (t_alpha * acc_regret_arr_linSGMED_std)/np.sqrt(n_trials)
 acc_regret_arr_linSGMED_confidence_down = acc_regret_arr_linSGMED_mean - (t_alpha * acc_regret_arr_linSGMED_std)/np.sqrt(n_trials)
 
-acc_regret_arr_OFUL_mean = np.mean(acc_regret_arr_OFUL, axis=0)
+acc_regret_arr_OFUL_mean = np.sum(acc_regret_arr_OFUL, axis=0)/n_trials
 acc_regret_arr_OFUL_std = np.std(acc_regret_arr_OFUL, axis=0, ddof=1)
 acc_regret_arr_OFUL_confidence_up = acc_regret_arr_OFUL_mean + (t_alpha * acc_regret_arr_OFUL_std)/np.sqrt(n_trials)
 acc_regret_arr_OFUL_confidence_down = acc_regret_arr_OFUL_mean - (t_alpha * acc_regret_arr_OFUL_std)/np.sqrt(n_trials)
@@ -89,15 +96,12 @@ acc_regret_arr_OFUL_confidence_down = acc_regret_arr_OFUL_mean - (t_alpha * acc_
 
 
 plt.plot(np.arange(n), acc_regret_arr_linSGMED_mean , label="Lin-SGMED")
-#plt.fill_between(np.arange(n),acc_regret_arr_linSGMED_confidence_down, acc_regret_arr_linSGMED_confidence_up)
+plt.fill_between(np.arange(n),acc_regret_arr_linSGMED_confidence_down, acc_regret_arr_linSGMED_confidence_up)
 plt.plot(np.arange(n), acc_regret_arr_OFUL_mean , label="OFUL")
-#plt.fill_between(np.arange(n),acc_regret_arr_OFUL_confidence_down, acc_regret_arr_OFUL_confidence_up)
+plt.fill_between(np.arange(n),acc_regret_arr_OFUL_confidence_down, acc_regret_arr_OFUL_confidence_up)
 # Naming the x-axis, y-axis and the whole graph
 plt.xlabel("Time")
 plt.ylabel("Regret")
 plt.title("Regret with time")
 plt.legend()
 plt.show()
-
-
-
