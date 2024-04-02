@@ -82,8 +82,8 @@ class Lin_IMED(Bandit):
 
 
     def calc_IMED_ver1_index(self):
-        a = self.X[self.empirical_best_arm, :]
-        vVal_lev_score_emp_best = np.matmul(np.matmul(a.T, self.invVt), a)
+        #a = self.X[self.empirical_best_arm, :]
+        #vVal_lev_score_emp_best = np.matmul(np.matmul(a.T, self.invVt), a)
         # print(vVal_lev_score_emp_best)
         # print(a.shape)
         for i in range(self.K):
@@ -113,8 +113,8 @@ class Lin_IMED(Bandit):
 
         self.estimate_empirical_reward_gap()
 
-        self.empirical_best_arm = np.where(self.Delta_empirical_gap == 0)[0][0]
-        self.empirical_best_ind[self.empirical_best_arm] = 1
+        #self.empirical_best_arm = np.where(self.Delta_empirical_gap == 0)[0][0]
+        #self.empirical_best_ind[self.empirical_best_arm] = 1
 
         self.calc_IMED_ver1_index()
         #self.scale_arms()
