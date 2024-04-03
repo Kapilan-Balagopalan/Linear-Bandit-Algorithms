@@ -138,7 +138,7 @@ class Lin_SGMED2(Bandit):
         #print(xt)
         self.XTy = self.XTy +  y_t * xt
         self.Vt =  self.Vt + np.outer(xt, xt)
-
+        #self.Vt.dropna(inplace=True)
         self.invVt = np.linalg.pinv(self.Vt )
 
         self.theta_hat = np.matmul(self.invVt, self.XTy.T)

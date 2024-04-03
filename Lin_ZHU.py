@@ -38,8 +38,7 @@ class Lin_ZHU(Bandit):
         self.multiplier = float(multiplier)
         self.N = n
 
-        self.lam_approx = 0.7
-        self.lam_true = 0.5
+
         # more instance variables
         self.t = 1
         self.K, self.d = self.X.shape
@@ -74,6 +73,8 @@ class Lin_ZHU(Bandit):
         self.gamma = 1
         self.eta = 1
         self.qt = np.zeros(self.K)
+        self.lam_approx = 0.7
+        self.lam_true = 0.5
 
     def calc_gamma(self):
         c_OPT = 4
@@ -173,12 +174,13 @@ class Lin_ZHU(Bandit):
         self.theta_hat = np.matmul(self.invVt, self.XTy.T)
         self.do_not_ask.append(pulled_idx)
 
-        my_t = self.t + 1
+        #my_t = self.t + 1
         #self.sqrt_beta = calc_sqrt_beta_det2(self.d, my_t, self.R, self.lam, self.delta, self.S, self.logdetV)
 
         self.estimate_empirical_reward_gap()
 
-        self.empirical_best_arm = np.where(self.Delta_empirical_gap == 0)[0][0]
+        self.empirical_best_arm = np.where(self.Delta_empirical_gap == 0)[0]
+        #print(self.empirical_best_arm)
         self.empirical_best_ind[self.empirical_best_arm] = 1
 
         #self.calc_ZHU_probability_distribution()

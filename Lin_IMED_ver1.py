@@ -89,7 +89,8 @@ class Lin_IMED(Bandit):
         for i in range(self.K):
             a = self.X[i, :]
             vVal_lev_score_a = np.matmul(np.matmul(a.T, self.invVt), a)
-            self.MED_quo[i] = (self.Delta_empirical_gap[i]**2)/((self.sqrt_beta**2)*vVal_lev_score_a) - np.log((self.sqrt_beta**2)*vVal_lev_score_a)
+            #print(vVal_lev_score_a)
+            self.MED_quo[i] = ((self.Delta_empirical_gap[i]**2)/((self.sqrt_beta**2)*vVal_lev_score_a)) - np.log((self.sqrt_beta**2)*vVal_lev_score_a)
 
     def update(self, pulled_idx, y_t):
         #assert (y_t >= 0.0 and y_t <= 1.0);

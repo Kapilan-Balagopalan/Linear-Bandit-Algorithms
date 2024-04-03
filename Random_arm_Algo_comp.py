@@ -44,7 +44,7 @@ d = 15
 
 acc_regret_linSGMED = 0
 acc_regret_OFUL  = 0
-n_trials = 20
+n_trials = 50
 acc_regret_arr_linSGMED = np.zeros((n_trials,n))
 acc_regret_arr_OFUL = np.zeros((n_trials,n))
 

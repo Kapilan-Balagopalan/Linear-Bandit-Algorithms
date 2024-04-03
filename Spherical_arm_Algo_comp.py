@@ -51,7 +51,7 @@ acc_regret_linSGMED2 = 0
 acc_regret_OFUL  = 0
 
 
-n_trials = 20
+n_trials = 50
 acc_regret_arr_linSGMED = np.zeros((n_trials,n))
 acc_regret_arr_linIMED = np.zeros((n_trials,n))
 acc_regret_arr_linZHU = np.zeros((n_trials,n))
@@ -118,7 +118,7 @@ for j in range(n_trials):
         OFUL_inst.update(x_t_OFUL, reward_t_OFUL)
 
 
-t_alpha = 1.66
+t_alpha = 0.5
 
 acc_regret_arr_linSGMED_mean = np.sum(acc_regret_arr_linSGMED, axis=0)/n_trials
 acc_regret_arr_linSGMED_std = np.std(acc_regret_arr_linSGMED, axis=0, ddof=1)
@@ -151,13 +151,15 @@ acc_regret_arr_OFUL_confidence_down = acc_regret_arr_OFUL_mean - (t_alpha * acc_
 
 
 plt.plot(np.arange(n), acc_regret_arr_linSGMED_mean , label="Lin-SGMED")
-#plt.fill_between(np.arange(n),acc_regret_arr_linSGMED_confidence_down, acc_regret_arr_linSGMED_confidence_up)
+plt.fill_between(np.arange(n),acc_regret_arr_linSGMED_confidence_down, acc_regret_arr_linSGMED_confidence_up)
 plt.plot(np.arange(n), acc_regret_arr_linIMED_mean , label="Lin-IMED")
+plt.fill_between(np.arange(n),acc_regret_arr_linIMED_confidence_down, acc_regret_arr_linIMED_confidence_up)
 plt.plot(np.arange(n), acc_regret_arr_linZHU_mean , label="Lin-ZHU")
+plt.fill_between(np.arange(n),acc_regret_arr_linZHU_confidence_down, acc_regret_arr_linZHU_confidence_up)
 plt.plot(np.arange(n), acc_regret_arr_linSGMED2_mean , label="Lin-SGMED2")
-#plt.fill_between(np.arange(n),acc_regret_arr_linSGMED2_confidence_down, acc_regret_arr_linSGMED2_confidence_up)
-#plt.plot(np.arange(n), acc_regret_arr_OFUL_mean , label="OFUL")
-#plt.fill_between(np.arange(n),acc_regret_arr_OFUL_confidence_down, acc_regret_arr_OFUL_confidence_up)
+plt.fill_between(np.arange(n),acc_regret_arr_linSGMED2_confidence_down, acc_regret_arr_linSGMED2_confidence_up)
+plt.plot(np.arange(n), acc_regret_arr_OFUL_mean , label="OFUL")
+plt.fill_between(np.arange(n),acc_regret_arr_OFUL_confidence_down, acc_regret_arr_OFUL_confidence_up)
 # Naming the x-axis, y-axis and the whole graph
 plt.xlabel("Time")
 plt.ylabel("Regret")
