@@ -40,9 +40,9 @@ def init(seed,K,n,d):
 
 
 
-K = 50
-n = 4000
-d = 10
+K = 200
+n = 1000
+d = 2
 
 acc_regret_linSGMED = 0
 acc_regret_linIMED = 0
@@ -51,7 +51,7 @@ acc_regret_linSGMED2 = 0
 acc_regret_OFUL  = 0
 
 
-n_trials = 50
+n_trials = 20
 acc_regret_arr_linSGMED = np.zeros((n_trials,n))
 acc_regret_arr_linIMED = np.zeros((n_trials,n))
 acc_regret_arr_linZHU = np.zeros((n_trials,n))
@@ -118,7 +118,7 @@ for j in range(n_trials):
         OFUL_inst.update(x_t_OFUL, reward_t_OFUL)
 
 
-t_alpha = 0.5
+t_alpha = 0.25
 
 acc_regret_arr_linSGMED_mean = np.sum(acc_regret_arr_linSGMED, axis=0)/n_trials
 acc_regret_arr_linSGMED_std = np.std(acc_regret_arr_linSGMED, axis=0, ddof=1)

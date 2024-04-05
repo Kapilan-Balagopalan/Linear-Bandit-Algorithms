@@ -9,6 +9,8 @@ import numpy.linalg as la
 from Bandit_Env import *
 from scipy.optimize import fsolve
 
+from scipy.optimize import brentq
+
 def sample_action(A,MED_prob_dist):
     K,d = A.shape
     ind = np.random.choice(K, 1, p= MED_prob_dist)
@@ -65,7 +67,7 @@ class Lin_ZHU(Bandit):
         self.temp_MED_quo = np.ones(self.K)
         self.empirical_best_quo = 0.5
         self.opt_design_quo = 0.5
-        self.AugX = self.X
+        self.AugX = self.X.copy()
         self.empirical_best_ind = np.zeros(self.K)
         self.Delta_empirical_gap = np.ones(self.K)
         self.empirical_best_arm = 0
@@ -94,14 +96,14 @@ class Lin_ZHU(Bandit):
         for i in range(self.K):
             #a = self.X[i, :]
             #vVal_lev_score_a = np.matmul(np.matmul(a.T, self.invVt), a)
-            self.MED_quo[i] = self.qt[i] /(self.lam_approx + self.eta*self.Delta_empirical_gap[i])
+            self.MED_quo[i] = self.qt[i] /(self.lam_true + self.eta*self.Delta_empirical_gap[i])
         #print("sum is :", np.sum(self.MED_quo))
 
     def find_lambda(self,x):
         temp = 0
         for i in range(self.K):
             temp = temp + self.qt[i] / (x+ self.eta * self.Delta_empirical_gap[i])
-        return temp
+        return temp - 1
 
     def next_arm(self):
         #valid_idx = np.setdiff1d(np.arange(self.K), self.do_not_ask)
@@ -121,10 +123,13 @@ class Lin_ZHU(Bandit):
         radius_sq = self.multiplier * (self.sqrt_beta) ** 2
         if (self.subsample_func == None):
             prob_dist = calc_q_opt_design(self.AugX)
+            #print("Probability sum is",np.sum(prob_dist))
             emp_bst_opt_prob_dist = self.empirical_best_quo*self.empirical_best_ind  + self.opt_design_quo * prob_dist
-            self.qt = emp_bst_opt_prob_dist
 
-            #self.lam_true = fsolve(self.find_lambda,1.00)
+            self.qt = emp_bst_opt_prob_dist
+            #print(self.empirical_best_quo,  self.opt_design_quo)
+            #print("Probability sum is",np.sum(self.empirical_best_ind),np.sum(prob_dist), np.sum(emp_bst_opt_prob_dist))
+            self.lam_true = brentq(self.find_lambda, 0.4,1.2)
             #print(self.lam_true)
             self.calc_ZHU_probability_distribution()
             MED_prob_dist = np.multiply(emp_bst_opt_prob_dist, self.MED_quo)
@@ -150,7 +155,10 @@ class Lin_ZHU(Bandit):
         # print(theta_t.shape)
         # print(A.shape)
         reward_A = np.matmul(self.X, self.theta_hat)
+        self.empirical_best_arm = np.argmax(reward_A)
+        #print("The argmax", np.argmax(reward_A))
         self.Delta_empirical_gap = np.max(reward_A) - reward_A
+
 
 
     def scale_arms(self):
@@ -179,8 +187,9 @@ class Lin_ZHU(Bandit):
 
         self.estimate_empirical_reward_gap()
 
-        self.empirical_best_arm = np.where(self.Delta_empirical_gap == 0)[0]
+        #self.empirical_best_arm = np.where(self.Delta_empirical_gap == 0)[0][0]
         #print(self.empirical_best_arm)
+        self.empirical_best_ind = np.zeros(self.K)
         self.empirical_best_ind[self.empirical_best_arm] = 1
 
         #self.calc_ZHU_probability_distribution()

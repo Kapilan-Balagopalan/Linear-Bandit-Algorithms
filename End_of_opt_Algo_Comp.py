@@ -21,7 +21,7 @@ def init_end_of_optimism(eps):
     S = 1
     sVal_dimension = d = 2
     sVal_arm_size = K = 3
-    sVal_horizon = n = 100
+    sVal_horizon = n = 100000
     sVal_lambda = d
     mVal_I = np.eye(sVal_dimension)
     mVal_lvrg_scr_orgn = sVal_lambda*mVal_I
@@ -59,7 +59,7 @@ acc_regret_linSGMED2 = 0
 acc_regret_OFUL  = 0
 
 
-n_trials = 100
+n_trials = 10
 
 acc_regret_arr_linSGMED = np.zeros((n_trials,n))
 acc_regret_arr_linIMED = np.zeros((n_trials,n))
@@ -175,5 +175,7 @@ plt.fill_between(np.arange(n), acc_regret_arr_OFUL_confidence_down, acc_regret_a
 plt.xlabel("Time")
 plt.ylabel("Regret")
 plt.title("Regret with time for End of Optimism")
+
 plt.legend()
 plt.show()
+

@@ -147,6 +147,7 @@ class Lin_SGMED(Bandit):
         self.estimate_empirical_reward_gap()
 
         self.empirical_best_arm = np.where(self.Delta_empirical_gap == 0)[0][0]
+        self.empirical_best_ind = np.zeros(self.K)
         self.empirical_best_ind[self.empirical_best_arm] = 1
 
         self.calc_MED_ver1_probability_distribution()

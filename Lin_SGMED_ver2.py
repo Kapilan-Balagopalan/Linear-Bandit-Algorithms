@@ -61,7 +61,7 @@ class Lin_SGMED2(Bandit):
         self.MED_quo = np.ones(self.K)
         self.empirical_best_quo = 0.5
         self.opt_design_quo = 0.5
-        self.AugX = self.X
+        self.AugX = self.X.copy()
         self.empirical_best_ind = np.zeros(self.K)
         self.Delta_empirical_gap = np.ones(self.K)
         self.empirical_best_arm = 0
@@ -115,13 +115,13 @@ class Lin_SGMED2(Bandit):
         # print(vVal_lev_score_emp_best)
         # print(a.shape)
         for i in range(self.K):
-            if(i == self.empirical_best_arm):
-                self.MED_quo[i] = 1
-            else:
-                a = self.X[i, :]
-                vVal_lev_score_a = np.matmul(np.matmul((a-a_hat).T, self.invVt), (a-a_hat))
+            a = self.X[i, :]
+            vVal_lev_score_a = np.matmul(np.matmul((a-a_hat).T, self.invVt), (a-a_hat))
+            if(vVal_lev_score_a != 0):
                 self.MED_quo[i] = np.exp(
-                    -(self.Delta_empirical_gap[i]) ** 2 / ((self.sqrt_beta**2) * (vVal_lev_score_a)))
+                    -(self.Delta_empirical_gap[i]) ** 2 / ((self.sqrt_beta ** 2) * (vVal_lev_score_a)))
+            else:
+                self.MED_quo[i] = 1
 
     def scale_arms(self):
         for i in range(self.K):
@@ -150,6 +150,7 @@ class Lin_SGMED2(Bandit):
         self.estimate_empirical_reward_gap()
 
         self.empirical_best_arm = np.where(self.Delta_empirical_gap == 0)[0][0]
+        self.empirical_best_ind = np.zeros(self.K)
         self.empirical_best_ind[self.empirical_best_arm] = 1
 
         self.calc_MED_ver2_probability_distribution()
