@@ -17,6 +17,12 @@ from BanditFactory import *
 import ipdb
 
 
+
+from tqdm import tqdm
+ 
+ 
+
+
 def init(seed,K,n,d):
     np.random.seed(seed)
     noise_sigma = 1
@@ -49,20 +55,18 @@ d = 20
 
 
 
-n_algo = 20 
+n_algo = 5
 
 algo_list = [None]*n_algo
 algo_names = ["OFUL","Lin-SGMED-1","Lin-SGMED-2","Lin-IMED-1","LinZHU" ]
-n_trials = 2
+n_trials = 20
 
 cum_regret_arr=  np.zeros((n_trials,n,n_algo))
 
 
 
 
-
-
-for j in range(n_trials):
+for j in tqdm(range(n_trials)):
     #seed = np.random.randint(1, 15751)
     seed = 15751 + j
     d, K, n, sVal_lambda, mVal_I, mVal_lvrg_scr_orgn, X, theta_true, noise_sigma, delta, S, best_arm = init(seed, K, n,
