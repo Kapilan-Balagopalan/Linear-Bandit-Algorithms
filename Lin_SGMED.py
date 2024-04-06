@@ -2,7 +2,7 @@ from optimaldesign import *
 from arms_generator import *
 import numpy as np
 import matplotlib.pyplot as plt
-
+import ipdb
 
 def init(seed,K,n,d):
     np.random.seed(seed)

@@ -39,12 +39,8 @@ class Oful(Bandit):
                 'subsample_func': self.subsample_func}
 
     def next_arm(self):
-        #valid_idx = np.setdiff1d(np.arange(self.N),self.do_not_ask)
         if (self.t == 1):
             return ra.randint(self.N), np.nan
-        #my_c = self.dbg_dict['multiplier']
-        #radius_sq = self.multiplier * (self.sqrt_beta)**2
-
         radius_sq = self.multiplier * self.gamma_t
         if (self.subsample_func == None):
             #obj_func = np.dot(self.X, self.theta_hat) + np.sqrt(radius_sq) * np.sqrt(self.X_invVt_norm_sq)
@@ -52,20 +48,9 @@ class Oful(Bandit):
             for i in range(self.N):
                 obj_func[i] = np.dot(self.X[i], self.theta_hat) + np.sqrt(radius_sq) * np.sqrt(
                     np.matmul(np.matmul(self.X[i].T, self.invVt), self.X[i]))
-
-
-            #chosen_inner = np.argmax(obj_func[valid_idx])
             chosen_inner = np.argmax(obj_func)
-            #chosen = valid_idx[chosen_inner]
         else:
             raise NotImplementedError() # todo: use valid_idx
-#             idx = self.subsample_func(self.N, self.subN);
-#             subX = self.X[idx,:];
-#             obj_func = np.dot(subX, self.theta_hat) + np.sqrt(radius_sq) * \
-#                     np.sqrt( mahalanobis_norm_sq_batch(subX, self.invVt));
-#
-#             chosen = idx[np.argmax(obj_func)];
-        #return chosen, radius_sq
         return chosen_inner,radius_sq
 
     def update(self, pulled_idx, y_t):
@@ -79,20 +64,6 @@ class Oful(Bandit):
         self.XTy += (y_t) * xt
         self.Vt += np.outer(xt,xt)
 
-        #tempval1 = np.dot(self.invVt, xt)    # d by 1, O(d^2)
-        #tempval2 = np.dot(tempval1, xt)      # scalar, O(d)
-        #self.logdetV += np.log(1 + tempval2)
-
-        #if (self.t % 20 == 0 & False):
-            #self.invVt = la.inv(self.Vt)
-            # FIXME: would this be a concern for the simulation?
-            #if (self.subsample_func == None):
-    #            self.X_invVt_norm_sq = mahalanobis_norm_sq_batch(self.X, self.invVt);  # O(Nd^2)
-                #self.X_invVt_norm_sq -= (np.dot(self.X, tempval1) ** 2) / (1 + tempval2) # efficient update, O(Nd)
-        #else:
-            #self.invVt -= np.outer(tempval1, tempval1) / (1 + tempval2)
-            #if (self.subsample_func == None):
-                #self.X_invVt_norm_sq -= (np.dot(self.X, tempval1) ** 2) / (1 + tempval2) # efficient update, O(Nd)
         self.invVt = np.linalg.inv(self.Vt)
         self.theta_hat = np.dot(self.invVt, self.XTy)
 

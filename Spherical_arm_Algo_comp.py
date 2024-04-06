@@ -12,6 +12,9 @@ from Lin_SGMED_ver2 import *
 from Lin_IMED_ver1 import *
 from Lin_ZHU import *
 from OFUL import *
+from BanditFactory import *
+
+import ipdb
 
 
 def init(seed,K,n,d):
@@ -41,125 +44,67 @@ def init(seed,K,n,d):
 
 
 K = 200
-n = 1000
-d = 2
-
-acc_regret_linSGMED = 0
-acc_regret_linIMED = 0
-acc_regret_linZHU = 0
-acc_regret_linSGMED2 = 0
-acc_regret_OFUL  = 0
+n = 10000
+d = 20
 
 
-n_trials = 20
-acc_regret_arr_linSGMED = np.zeros((n_trials,n))
-acc_regret_arr_linIMED = np.zeros((n_trials,n))
-acc_regret_arr_linZHU = np.zeros((n_trials,n))
-acc_regret_arr_linSGMED2 = np.zeros((n_trials,n))
-acc_regret_arr_OFUL = np.zeros((n_trials,n))
+
+n_algo = 20 
+
+algo_list = [None]*n_algo
+algo_names = ["OFUL","Lin-SGMED-1","Lin-SGMED-2","Lin-IMED-1","LinZHU" ]
+n_trials = 2
+
+cum_regret_arr=  np.zeros((n_trials,n,n_algo))
+
+
 
 
 
 
 for j in range(n_trials):
-    seed = np.random.randint(1, 15751)
+    #seed = np.random.randint(1, 15751)
+    seed = 15751 + j
     d, K, n, sVal_lambda, mVal_I, mVal_lvrg_scr_orgn, X, theta_true, noise_sigma, delta, S, best_arm = init(seed, K, n,
                                                                                                             d)
-    R = noise_sigma
-    linSGMED_inst = Lin_SGMED(X, sVal_lambda, R, S, flags=None, subsample_func=None, subsample_rate=1.0, multiplier=1.0)
-    linSGMED2_inst = Lin_SGMED2(X, sVal_lambda, R, S, flags=None, subsample_func=None, subsample_rate=1.0,
-                                multiplier=1.0)
-    lam = 1 / (S ** 2)
-    linIMED_inst = Lin_IMED(X, sVal_lambda, R, S, flags=None, subsample_func=None, subsample_rate=1.0, multiplier=1.0)
-    linZHU_inst = Lin_ZHU(X, sVal_lambda, R, S,n, flags=None, subsample_func=None, subsample_rate=1.0, multiplier=1.0)
-    OFUL_inst = Oful(X, lam, R, S, flags=None, subsample_func=None, subsample_rate=1.0, multiplier=1.0)
+    R= noise_sigma
+    i = 0
+    for name in algo_names:
+        algo_list[i] = bandit_factory(name,X,R,S,n)
+        i = i+1
 
-    #R = noise_sigma
-    acc_regret_linSGMED = 0
-    acc_regret_linIMED = 0
-    acc_regret_linZHU = 0
-    acc_regret_linSGMED2 = 0
-    acc_regret_OFUL = 0
-    for t in range(n):
-        x_t_linSGMED, radius_sq_linSGMED = linSGMED_inst.next_arm()
-        x_t_linIMED, radius_sq_linIMED = linIMED_inst.next_arm()
-        x_t_linZHU, radius_sq_linZHU = linZHU_inst.next_arm()
-        x_t_linSGMED2, radius_sq_linSGMED2 = linSGMED2_inst.next_arm()
-        x_t_OFUL, radius_sq_OFUL = OFUL_inst.next_arm()
+    cum_regret = 0
+    for i in range(n_algo):
+        cum_regret = 0
+        for t in range(n):
+            arm , radius = algo_list[i].next_arm()
+            inst_regret = calc_regret(arm, theta_true, X)
+            cum_regret = cum_regret + inst_regret
+            cum_regret_arr[j][t][i] =  cum_regret
+            reward = receive_reward(arm, theta_true, noise_sigma, X)
+            algo_list[i].update(arm,reward)
+        
 
-        inst_regret_linSGMED = calc_regret(x_t_linSGMED, theta_true, X)
-        inst_regret_linIMED = calc_regret(x_t_linIMED, theta_true, X)
-        inst_regret_linZHU = calc_regret(x_t_linZHU, theta_true, X)
-        inst_regret_linSGMED2 = calc_regret(x_t_linSGMED2, theta_true, X)
-        inst_regret_OFUL = calc_regret(x_t_OFUL, theta_true, X)
-
-        acc_regret_linSGMED = acc_regret_linSGMED + inst_regret_linSGMED
-        acc_regret_linIMED = acc_regret_linIMED + inst_regret_linIMED
-        acc_regret_linZHU = acc_regret_linZHU + inst_regret_linZHU
-        acc_regret_linSGMED2 = acc_regret_linSGMED2 + inst_regret_linSGMED2
-        acc_regret_OFUL = acc_regret_OFUL + inst_regret_OFUL
-
-        acc_regret_arr_linSGMED[j][t] = acc_regret_linSGMED
-        acc_regret_arr_linIMED[j][t] = acc_regret_linIMED
-        acc_regret_arr_linZHU[j][t] = acc_regret_linZHU
-        acc_regret_arr_linSGMED2[j][t] = acc_regret_linSGMED2
-        acc_regret_arr_OFUL[j][t] = acc_regret_OFUL
-        # print(Arm_t)
-        reward_t_linSGMED = receive_reward(x_t_linSGMED, theta_true, noise_sigma, X)
-        reward_t_linIMED = receive_reward(x_t_linIMED, theta_true, noise_sigma, X)
-        reward_t_linZHU = receive_reward(x_t_linZHU, theta_true, noise_sigma, X)
-        reward_t_linSGMED2 = receive_reward(x_t_linSGMED2, theta_true, noise_sigma, X)
-        reward_t_OFUL = receive_reward(x_t_OFUL, theta_true, noise_sigma, X)
-
-        linSGMED_inst.update(x_t_linSGMED, reward_t_linSGMED)
-        linIMED_inst.update(x_t_linIMED, reward_t_linIMED)
-        linZHU_inst.update(x_t_linZHU, reward_t_linZHU)
-        linSGMED2_inst.update(x_t_linSGMED2, reward_t_linSGMED2)
-        OFUL_inst.update(x_t_OFUL, reward_t_OFUL)
+t_alpha = 1
 
 
-t_alpha = 0.25
+cum_regret_mean = np.sum(cum_regret_arr, axis=0)/n_trials
+cum_regret_mean_std = np.std(cum_regret_arr, axis=0, ddof=1)
+#ipdb.set_trace()
+print(cum_regret_mean.shape)
 
-acc_regret_arr_linSGMED_mean = np.sum(acc_regret_arr_linSGMED, axis=0)/n_trials
-acc_regret_arr_linSGMED_std = np.std(acc_regret_arr_linSGMED, axis=0, ddof=1)
-acc_regret_arr_linSGMED2_mean = np.sum(acc_regret_arr_linSGMED2, axis=0)/n_trials
-acc_regret_arr_linSGMED2_std = np.std(acc_regret_arr_linSGMED2, axis=0, ddof=1)
-acc_regret_arr_linIMED_mean = np.sum(acc_regret_arr_linIMED, axis=0)/n_trials
-acc_regret_arr_linIMED_std = np.std(acc_regret_arr_linIMED, axis=0, ddof=1)
-acc_regret_arr_linZHU_mean = np.sum(acc_regret_arr_linZHU, axis=0)/n_trials
-acc_regret_arr_linZHU_std = np.std(acc_regret_arr_linZHU, axis=0, ddof=1)
-
-acc_regret_arr_linSGMED_confidence_up = acc_regret_arr_linSGMED_mean + (t_alpha * acc_regret_arr_linSGMED_std)/np.sqrt(n_trials)
-acc_regret_arr_linSGMED_confidence_down = acc_regret_arr_linSGMED_mean - (t_alpha * acc_regret_arr_linSGMED_std)/np.sqrt(n_trials)
-
-acc_regret_arr_linIMED_confidence_up = acc_regret_arr_linIMED_mean + (t_alpha * acc_regret_arr_linIMED_std)/np.sqrt(n_trials)
-acc_regret_arr_linIMED_confidence_down = acc_regret_arr_linIMED_mean - (t_alpha * acc_regret_arr_linIMED_std)/np.sqrt(n_trials)
-
-acc_regret_arr_linZHU_confidence_up = acc_regret_arr_linZHU_mean + (t_alpha * acc_regret_arr_linZHU_std)/np.sqrt(n_trials)
-acc_regret_arr_linZHU_confidence_down = acc_regret_arr_linZHU_mean - (t_alpha * acc_regret_arr_linZHU_std)/np.sqrt(n_trials)
-
-acc_regret_arr_linSGMED2_confidence_up = acc_regret_arr_linSGMED2_mean + (t_alpha * acc_regret_arr_linSGMED2_std)/np.sqrt(n_trials)
-acc_regret_arr_linSGMED2_confidence_down = acc_regret_arr_linSGMED2_mean - (t_alpha * acc_regret_arr_linSGMED2_std)/np.sqrt(n_trials)
-
-acc_regret_arr_OFUL_mean = np.sum(acc_regret_arr_OFUL, axis=0)/n_trials
-acc_regret_arr_OFUL_std = np.std(acc_regret_arr_OFUL, axis=0, ddof=1)
-acc_regret_arr_OFUL_confidence_up = acc_regret_arr_OFUL_mean + (t_alpha * acc_regret_arr_OFUL_std)/np.sqrt(n_trials)
-acc_regret_arr_OFUL_confidence_down = acc_regret_arr_OFUL_mean - (t_alpha * acc_regret_arr_OFUL_std)/np.sqrt(n_trials)
+cum_regret_confidence_up = cum_regret_mean + (t_alpha * cum_regret_mean_std)/np.sqrt(n_trials)
+cum_confidence_down = cum_regret_mean - (t_alpha * cum_regret_mean_std)/np.sqrt(n_trials)
 
 
 
+i=0
 
+for name in algo_list:
+    plt.plot(np.arange(n), cum_regret_mean[:,i] , label=algo_names[i])
+    plt.fill_between(np.arange(n),cum_regret_confidence_up[:,i], cum_confidence_down[:,i], alpha=.3)
+    i = i + 1
 
-plt.plot(np.arange(n), acc_regret_arr_linSGMED_mean , label="Lin-SGMED")
-plt.fill_between(np.arange(n),acc_regret_arr_linSGMED_confidence_down, acc_regret_arr_linSGMED_confidence_up)
-plt.plot(np.arange(n), acc_regret_arr_linIMED_mean , label="Lin-IMED")
-plt.fill_between(np.arange(n),acc_regret_arr_linIMED_confidence_down, acc_regret_arr_linIMED_confidence_up)
-plt.plot(np.arange(n), acc_regret_arr_linZHU_mean , label="Lin-ZHU")
-plt.fill_between(np.arange(n),acc_regret_arr_linZHU_confidence_down, acc_regret_arr_linZHU_confidence_up)
-plt.plot(np.arange(n), acc_regret_arr_linSGMED2_mean , label="Lin-SGMED2")
-plt.fill_between(np.arange(n),acc_regret_arr_linSGMED2_confidence_down, acc_regret_arr_linSGMED2_confidence_up)
-plt.plot(np.arange(n), acc_regret_arr_OFUL_mean , label="OFUL")
-plt.fill_between(np.arange(n),acc_regret_arr_OFUL_confidence_down, acc_regret_arr_OFUL_confidence_up)
 # Naming the x-axis, y-axis and the whole graph
 plt.xlabel("Time")
 plt.ylabel("Regret")

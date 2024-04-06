@@ -61,7 +61,7 @@ class Lin_SGMED(Bandit):
         self.MED_quo = np.ones(self.K)
         self.empirical_best_quo = 0.5
         self.opt_design_quo = 0.5
-        self.AugX = self.X
+        self.AugX = self.X.copy()
         self.empirical_best_ind = np.zeros(self.K)
         self.Delta_empirical_gap = np.ones(self.K)
         self.empirical_best_arm = 0

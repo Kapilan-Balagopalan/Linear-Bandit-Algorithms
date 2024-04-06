@@ -2,7 +2,7 @@ from optimaldesign import *
 from arms_generator import *
 import numpy as np
 import matplotlib.pyplot as plt
-
+import ipdb 
 
 import numpy.random as ra
 import numpy.linalg as la
@@ -108,7 +108,6 @@ class Lin_IMED(Bandit):
 
         self.theta_hat = np.matmul(self.invVt, self.XTy.T)
         self.do_not_ask.append(pulled_idx)
-
         my_t = self.t + 1
         self.sqrt_beta = calc_sqrt_beta_det2(self.d, my_t, self.R, self.lam, self.delta, self.S, self.logdetV)
 

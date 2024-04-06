@@ -2,7 +2,7 @@ from optimaldesign import *
 from arms_generator import *
 import numpy as np
 import matplotlib.pyplot as plt
-
+import ipdb
 
 import numpy.random as ra
 import numpy.linalg as la
