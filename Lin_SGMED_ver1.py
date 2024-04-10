@@ -2,7 +2,7 @@ from optimaldesign import *
 from arms_generator import *
 import numpy as np
 import matplotlib.pyplot as plt
-
+import ipdb
 
 import numpy.random as ra
 import numpy.linalg as la
@@ -81,7 +81,7 @@ class Lin_SGMED(Bandit):
             # print(MED_prob_dist.shape)
             Arm_t, chosen = sample_action(self.X, MED_prob_dist)
             return chosen, np.nan
-        radius_sq = self.multiplier * (self.sqrt_beta) ** 2
+        radius_sq = self.multiplier * (self.gamma_t)
         if (self.subsample_func == None):
             prob_dist = calc_q_opt_design(self.AugX)
             emp_bst_opt_prob_dist = self.empirical_best_quo*self.empirical_best_ind  + self.opt_design_quo * prob_dist
@@ -118,7 +118,7 @@ class Lin_SGMED(Bandit):
             a = self.X[i, :]
             vVal_lev_score_a = np.matmul(np.matmul(a.T, self.invVt), a)
             self.MED_quo[i] = np.exp(
-                -(self.Delta_empirical_gap[i]) ** 2 / ((self.sqrt_beta**2) * (vVal_lev_score_a + vVal_lev_score_emp_best)))
+                -(self.Delta_empirical_gap[i]) ** 2 / ((self.gamma_t) * (vVal_lev_score_a + vVal_lev_score_emp_best)))
 
     def scale_arms(self):
         for i in range(self.K):
@@ -142,8 +142,9 @@ class Lin_SGMED(Bandit):
         self.do_not_ask.append(pulled_idx)
 
         my_t = self.t + 1
-        self.sqrt_beta = calc_sqrt_beta_det2(self.d, my_t, self.R, self.lam, self.delta, self.S, self.logdetV)
-
+        #self.sqrt_beta = calc_sqrt_beta_det2(self.d, my_t, self.R, self.lam, self.delta, self.S, self.logdetV)
+        #self.gamma_t = calc_gamma_t(self.t, self.d, self.lam, self.delta, self.S, self.R)
+        self.gamma_t = calc_gamma_t(self.t,self.d,self.lam,self.delta,self.S,self.R)
         self.estimate_empirical_reward_gap()
 
         self.empirical_best_arm = np.where(self.Delta_empirical_gap == 0)[0][0]
@@ -152,7 +153,7 @@ class Lin_SGMED(Bandit):
 
         self.calc_MED_ver1_probability_distribution()
         self.scale_arms()
-        self.gamma_t = calc_gamma_t(self.t,self.d,self.lam,self.delta,self.S,self.R)
+        
         self.t = self.t +  1
 
     def getDoNotAsk(self):

@@ -41,6 +41,7 @@ class Lin_IMED(Bandit):
         self.sqrt_beta = calc_sqrt_beta_det2(self.d, self.t, self.R, self.lam, self.delta, self.S, self.logdetV)
         self.theta_hat = np.zeros(self.d)
         self.Vt = self.lam * np.eye(self.d)
+        self.beta_t = 1
 
         self.do_not_ask = []
         self.dbg_dict = {'multiplier': float(multiplier),
@@ -61,7 +62,7 @@ class Lin_IMED(Bandit):
         if (self.t == 1):
             chosen = np.argmax(self.MED_quo)
             return chosen, np.nan
-        radius_sq = self.multiplier * (self.sqrt_beta) ** 2
+        radius_sq = self.multiplier * (self.beta_t)
         if (self.subsample_func == None):
             chosen = np.argmin(self.MED_quo)
         else:
@@ -90,7 +91,7 @@ class Lin_IMED(Bandit):
             a = self.X[i, :]
             vVal_lev_score_a = np.matmul(np.matmul(a.T, self.invVt), a)
             #print(vVal_lev_score_a)
-            self.MED_quo[i] = ((self.Delta_empirical_gap[i]**2)/((self.sqrt_beta**2)*vVal_lev_score_a)) - np.log((self.sqrt_beta**2)*vVal_lev_score_a)
+            self.MED_quo[i] = ((self.Delta_empirical_gap[i]**2)/((self.beta_t)*vVal_lev_score_a)) - np.log((self.beta_t)*vVal_lev_score_a)
 
     def update(self, pulled_idx, y_t):
         #assert (y_t >= 0.0 and y_t <= 1.0);
@@ -109,8 +110,8 @@ class Lin_IMED(Bandit):
         self.theta_hat = np.matmul(self.invVt, self.XTy.T)
         self.do_not_ask.append(pulled_idx)
         my_t = self.t + 1
-        self.sqrt_beta = calc_sqrt_beta_det2(self.d, my_t, self.R, self.lam, self.delta, self.S, self.logdetV)
-
+        #self.sqrt_beta = calc_sqrt_beta_det2(self.d, my_t, self.R, self.lam, self.delta, self.S, self.logdetV)
+        self.beta_t = calc_beta_t(self.t, self.d, self.lam, self.delta, self.S, self.R)
         self.estimate_empirical_reward_gap()
 
         #self.empirical_best_arm = np.where(self.Delta_empirical_gap == 0)[0][0]

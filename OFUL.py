@@ -2,7 +2,7 @@ import numpy as np
 
 import numpy.random as ra
 import numpy.linalg as la
-
+import ipdb
 from Bandit_Env import *
 
 class Oful(Bandit):
@@ -33,6 +33,8 @@ class Oful(Bandit):
         self.theta_hat = np.zeros(self.d)
         self.Vt = self.lam * np.eye(self.d)
 
+        self.beta_t = 1
+
         self.do_not_ask = []
         self.dbg_dict = {'multiplier':float(multiplier),
                 'subN': self.subN,
@@ -41,7 +43,7 @@ class Oful(Bandit):
     def next_arm(self):
         if (self.t == 1):
             return ra.randint(self.N), np.nan
-        radius_sq = self.multiplier * self.gamma_t
+        radius_sq = self.multiplier * self.beta_t
         if (self.subsample_func == None):
             #obj_func = np.dot(self.X, self.theta_hat) + np.sqrt(radius_sq) * np.sqrt(self.X_invVt_norm_sq)
             obj_func = np.zeros(self.N)
@@ -70,8 +72,8 @@ class Oful(Bandit):
 
         #self.do_not_ask.append( pulled_idx )
 
-        my_t = self.t + 1
-        self.gamma_t = calc_gamma_t(self.t, self.d, self.lam, self.delta, self.S, self.R)
+        #my_t = self.t + 1
+        self.beta_t = calc_beta_t(self.t, self.d, self.lam, self.delta, self.S, self.R)
         #self.sqrt_beta = calc_sqrt_beta_det2(self.d,my_t,self.R,self.lam,self.delta,self.S,self.logdetV)
 
         self.t += 1

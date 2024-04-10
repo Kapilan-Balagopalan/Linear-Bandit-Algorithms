@@ -50,7 +50,7 @@ def init(seed,K,n,d):
 
 
 K = 200
-n = 10000
+n = 1000
 d = 20
 
 
@@ -59,7 +59,7 @@ n_algo = 5
 
 algo_list = [None]*n_algo
 algo_names = ["OFUL","Lin-SGMED-1","Lin-SGMED-2","Lin-IMED-1","LinZHU" ]
-n_trials = 20
+n_trials = 10
 
 cum_regret_arr=  np.zeros((n_trials,n,n_algo))
 
