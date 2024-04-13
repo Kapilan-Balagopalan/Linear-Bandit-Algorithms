@@ -47,6 +47,10 @@ def calc_beta_t_OFUL(t,d,sVal_lambda,delta,S,noise_sigma):
     beta_t = (noise_sigma*np.sqrt(d*np.log(1 + t/(sVal_lambda*d)) + 2*np.log(1/delta)) + np.sqrt(sVal_lambda)*S)**2
     return beta_t
 
+def calc_beta_t_LinIMED(t,d,sVal_lambda,delta,S,noise_sigma):
+    beta_t = (noise_sigma*np.sqrt(3*d*np.log(1 + t) ) + np.sqrt(2))**2
+    return beta_t
+
 def receive_reward(chosen,theta_true, noise_sigma, A):
     #print(Arm_t.shape)
     #print(theta_true.shape)

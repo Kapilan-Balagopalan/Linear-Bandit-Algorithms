@@ -109,6 +109,8 @@ class Lin_SGMED(Bandit):
             self.calc_MED_ver1_probability_distribution()
         elif(self.flags["version"] == 2): 
             self.calc_MED_ver2_probability_distribution()
+        else:
+            raise NotImplementedError()
         
         self.scale_arms()
         

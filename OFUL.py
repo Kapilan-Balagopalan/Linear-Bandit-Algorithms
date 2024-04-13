@@ -13,11 +13,11 @@ class Oful(Bandit):
 
         # more instance variables
         self.t = 1
-        self.N, self.d = self.X.shape
+        self.K, self.d = self.X.shape
 
         #- subsampling aspect
         assert subsample_func == None
-        self.subN = np.round(self.N * float(subsample_rate)).astype(int)
+        self.subN = np.round(self.K* float(subsample_rate)).astype(int)
         self.subsample_func = subsample_func
 
         self.XTy = np.zeros(self.d)
@@ -32,13 +32,13 @@ class Oful(Bandit):
 
     def next_arm(self):
         if (self.t == 1):
-            return np.random.randint(self.N) 
+            return np.random.randint(self.K) 
         
         if (self.subsample_func == None):
             radius_sq = self.multiplier * self.beta_t
             #obj_func = np.dot(self.X, self.theta_hat) + np.sqrt(radius_sq) * np.sqrt(self.X_invVt_norm_sq)
-            obj_func = np.zeros(self.N)
-            for i in range(self.N):
+            obj_func = np.zeros(self.K)
+            for i in range(self.K):
                 obj_func[i] = np.dot(self.X[i], self.theta_hat) + np.sqrt(radius_sq) * np.sqrt(
                     np.matmul(np.matmul(self.X[i].T, self.invVt), self.X[i]))
             chosen = np.argmax(obj_func)
