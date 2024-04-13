@@ -4,9 +4,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-import numpy.random as ra
-import numpy.linalg as la
-
 from BanditFactory import *
 import ipdb
 
@@ -22,7 +19,7 @@ def init_end_of_optimism(eps):
     S = 1
     sVal_dimension = d = 2
     sVal_arm_size = K = 3
-    sVal_horizon = n = 1000000
+    sVal_horizon = n = 1000
     sVal_lambda = d
     mVal_I = np.eye(sVal_dimension)
     mVal_lvrg_scr_orgn = sVal_lambda*mVal_I
@@ -53,7 +50,8 @@ cum_regret_arr=  np.zeros((n_trials,n,n_algo))
 
 
 for j in tqdm(range(n_trials)):
-    #seed = np.random.randint(1, 15751)
+    seed = 15751 + j
+    np.random.seed(seed)
     R= noise_sigma
     i = 0
     for name in algo_names:
