@@ -1,4 +1,21 @@
 import numpy as np
+import ipdb
+
+
+def calc_gamma_LinZHU(N,d, delta):
+    c_OPT = 4
+    gamma = np.power(((3*N*np.sqrt(c_OPT)*np.sqrt(d))/(2*d*np.log(N)) + 64 *np.log(2/delta) ),2/3)
+    return gamma
+
+def calc_eta_LinZHU(gamma,d):
+    c_OPT = 4
+    eta = gamma / (c_OPT*d)
+    return eta
+
+def sample_action(A,MED_prob_dist):
+    K,d = A.shape
+    ind = np.random.choice(K, 1, p= MED_prob_dist)
+    return A[ind,:], ind
 
 
 def calc_sqrt_beta_det2(d,t,R,ridge,delta,S,logdetV):
@@ -22,10 +39,11 @@ def calc_regret(chosen_arm, theta_true, A):
     # print(inst_regret)
     return inst_regret
 
-def calc_gamma_t(t,d,sVal_lambda,delta,S,noise_sigma):
+def calc_gamma_t_SGMED(t,d,sVal_lambda,delta,S,noise_sigma):
     gamma_t = (noise_sigma*np.sqrt(d*np.log(1 + t/(sVal_lambda*d)) + 2*np.log(2/delta)) + np.sqrt(sVal_lambda)*S)**2
     return gamma_t
-def calc_beta_t(t,d,sVal_lambda,delta,S,noise_sigma):
+
+def calc_beta_t_OFUL(t,d,sVal_lambda,delta,S,noise_sigma):
     beta_t = (noise_sigma*np.sqrt(d*np.log(1 + t/(sVal_lambda*d)) + 2*np.log(1/delta)) + np.sqrt(sVal_lambda)*S)**2
     return beta_t
 

@@ -1,8 +1,3 @@
-import numpy as np
-
-import numpy.random as ra
-import numpy.linalg as la
-import ipdb
 from Bandit_Env import *
 
 class Oful(Bandit):
@@ -33,27 +28,23 @@ class Oful(Bandit):
         self.theta_hat = np.zeros(self.d)
         self.Vt = self.lam * np.eye(self.d)
 
-        self.beta_t = 1
-
-        self.do_not_ask = []
-        self.dbg_dict = {'multiplier':float(multiplier),
-                'subN': self.subN,
-                'subsample_func': self.subsample_func}
+        self.beta_t = calc_beta_t_OFUL(self.t, self.d, self.lam, self.delta, self.S, self.R)
 
     def next_arm(self):
         if (self.t == 1):
-            return ra.randint(self.N), np.nan
-        radius_sq = self.multiplier * self.beta_t
+            return np.random.randint(self.N) 
+        
         if (self.subsample_func == None):
+            radius_sq = self.multiplier * self.beta_t
             #obj_func = np.dot(self.X, self.theta_hat) + np.sqrt(radius_sq) * np.sqrt(self.X_invVt_norm_sq)
             obj_func = np.zeros(self.N)
             for i in range(self.N):
                 obj_func[i] = np.dot(self.X[i], self.theta_hat) + np.sqrt(radius_sq) * np.sqrt(
                     np.matmul(np.matmul(self.X[i].T, self.invVt), self.X[i]))
-            chosen_inner = np.argmax(obj_func)
+            chosen = np.argmax(obj_func)
         else:
             raise NotImplementedError() # todo: use valid_idx
-        return chosen_inner,radius_sq
+        return chosen
 
     def update(self, pulled_idx, y_t):
 
@@ -69,25 +60,10 @@ class Oful(Bandit):
         self.invVt = np.linalg.inv(self.Vt)
         self.theta_hat = np.dot(self.invVt, self.XTy)
 
+        self.beta_t = calc_beta_t_OFUL(self.t, self.d, self.lam, self.delta, self.S, self.R)
 
-        #self.do_not_ask.append( pulled_idx )
+        self.t = self.t  + 1
 
-        #my_t = self.t + 1
-        self.beta_t = calc_beta_t(self.t, self.d, self.lam, self.delta, self.S, self.R)
-        #self.sqrt_beta = calc_sqrt_beta_det2(self.d,my_t,self.R,self.lam,self.delta,self.S,self.logdetV)
-
-        self.t += 1
-
-    def getDoNotAsk(self):
-        return self.do_not_ask
-
-    def predict(self, X=None):
-        if X is None:
-            X = self.X
-        return X.dot(self.theta_hat)
-
-    def get_debug_dict(self):
-        return self.dbg_dict
 
 
 

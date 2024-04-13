@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import numpy.random as ra
 import numpy.linalg as la
 
-from Lin_SGMED_ver1 import *
+from Lin_SGMED import *
 
 from OFUL import *
 

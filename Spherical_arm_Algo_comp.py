@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 import numpy.random as ra
 import numpy.linalg as la
 
-from Lin_SGMED_ver1 import *
-from Lin_SGMED_ver2 import *
+from Lin_SGMED import *
+
 from Lin_IMED_ver1 import *
 from Lin_ZHU import *
 from OFUL import *
@@ -82,8 +82,7 @@ for j in tqdm(range(n_trials)):
     for i in range(n_algo):
         cum_regret = 0
         for t in range(n):
-            arm  = (algo_list[i].next_arm())[0]
-            #print(arm)
+            arm  = algo_list[i].next_arm()
             inst_regret = calc_regret(arm, theta_true, X)
             cum_regret = cum_regret + inst_regret
             cum_regret_arr[j][t][i] =  cum_regret

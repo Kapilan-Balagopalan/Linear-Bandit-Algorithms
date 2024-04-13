@@ -26,10 +26,7 @@ def bandit_factory(name, X, R, S,n):
             'lam': ((R**2)*d)/S**2,
             'R' : R,
             'S': S,
-            'flags': {},
-            'subsample_func' :None,
-            'multiplier': 1.0,  # the multiplier to the radius_sq,
-            'subsample_rate' : 1.0
+            'flags': {"version":1}
         };
         algo = Lin_SGMED(**opt)
         return algo
@@ -39,12 +36,9 @@ def bandit_factory(name, X, R, S,n):
             'lam': ((R**2)*d)/S**2,
             'R' : R,
             'S': S,
-            'flags': {},
-            'subsample_func' :None,
-            'multiplier': 1.0,  # the multiplier to the radius_sq,
-            'subsample_rate' : 1.0
+            'flags': {"version":2}
         };
-        algo = Lin_SGMED2(**opt)
+        algo = Lin_SGMED(**opt)
         return algo
     elif (name == "Lin-IMED-1"):
         opt = {

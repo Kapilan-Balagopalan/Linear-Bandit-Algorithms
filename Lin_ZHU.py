@@ -5,27 +5,6 @@ from Bandit_Env import *
 
 from scipy.optimize import brentq
 
-def sample_action(A,MED_prob_dist):
-    K,d = A.shape
-    ind = np.random.choice(K, 1, p= MED_prob_dist)
-    return A[ind,:], ind
-
-def calc_q_opt_design(A):
-    sVal_opt_design_arms, sampling_time = optimal_design_algo(A)
-    prob_dist = optimal_probability(A, sVal_opt_design_arms)
-    return prob_dist
-
-def calc_gamma(N,d, delta):
-    c_OPT = 4
-    gamma = np.power(((3*N*np.sqrt(c_OPT)*np.sqrt(d))/(2*d*np.log(N)) + 64 *np.log(2/delta) ),2/3)
-    return gamma
-
-def calc_eta(gamma,d):
-    c_OPT = 4
-    eta = gamma / (c_OPT*d)
-    return eta
-
-
 class Lin_ZHU(Bandit):
     ########################################
     def __init__(self, X, lam, R, S,N, flags):
@@ -44,8 +23,6 @@ class Lin_ZHU(Bandit):
 
         self.XTy = np.zeros(self.d)
         self.invVt = np.eye(self.d) / self.lam
-
-        self.theta_hat = np.zeros(self.d)
         self.Vt = self.lam * np.eye(self.d)
 
         self.empirical_best_quo = 0.5
@@ -55,8 +32,8 @@ class Lin_ZHU(Bandit):
         self.Delta_empirical_gap = np.ones(self.K)
         self.empirical_best_arm = 0
 
-        self.gamma = calc_gamma(self.N,self.d,self.delta)
-        self.eta = calc_eta(self.gamma, self.d)
+        self.gamma = calc_gamma_LinZHU(self.N,self.d,self.delta)
+        self.eta = calc_eta_LinZHU(self.gamma, self.d)
 
     def calc_ZHU_probability_distribution(self,qt,lam_true):
 
@@ -122,14 +99,3 @@ class Lin_ZHU(Bandit):
         self.scale_arms()
 
         self.t = self.t +  1
-
-    def getDoNotAsk(self):
-        return self.do_not_ask
-
-    def predict(self, X=None):
-        if X is None:
-            X = self.X
-        return X.dot(self.theta_hat)
-
-    def get_debug_dict(self):
-        return self.dbg_dict

@@ -15,38 +15,30 @@ from Bandit_Env import *
 #meaning full names will not have vowels in it e.g leverage = 'lvrg'
 class Lin_IMED(Bandit):
     ########################################
-    def __init__(self, X, lam, R, S, flags, subsample_func=None, subsample_rate=1.0, multiplier=1.0):
+    def __init__(self, X, lam, R, S, flags):
         self.X = X
         self.R = R
         self.lam = lam
         self.delta = .01
         self.S = S
         self.flags = flags
-        self.multiplier = float(multiplier)
+    
 
 
         # more instance variables
         self.t = 1
         self.K, self.d = self.X.shape
 
-        # - subsampling aspect
-        assert subsample_func == None
-        self.subN = np.round(self.K * float(subsample_rate)).astype(int)
-        self.subsample_func = subsample_func
 
         self.XTy = np.zeros(self.d)
         self.invVt = np.eye(self.d) / self.lam
-        self.X_invVt_norm_sq = np.sum(self.X * self.X, axis=1) / self.lam
-        self.logdetV = self.d * np.log(self.lam)
+       
         self.sqrt_beta = calc_sqrt_beta_det2(self.d, self.t, self.R, self.lam, self.delta, self.S, self.logdetV)
         self.theta_hat = np.zeros(self.d)
         self.Vt = self.lam * np.eye(self.d)
         self.beta_t = 1
 
-        self.do_not_ask = []
-        self.dbg_dict = {'multiplier': float(multiplier),
-                         'subN': self.subN,
-                         'subsample_func': self.subsample_func}
+       
 
         self.MED_quo = np.ones(self.K)
         self.empirical_best_quo = 0.5
@@ -61,7 +53,7 @@ class Lin_IMED(Bandit):
         #valid_idx = np.setdiff1d(np.arange(self.K), self.do_not_ask)
         if (self.t == 1):
             chosen = np.argmax(self.MED_quo)
-            return chosen, np.nan
+            return chosen
         radius_sq = self.multiplier * (self.beta_t)
         if (self.subsample_func == None):
             chosen = np.argmin(self.MED_quo)
@@ -73,7 +65,7 @@ class Lin_IMED(Bandit):
         #                     np.sqrt( mahalanobis_norm_sq_batch(subX, self.invVt));
         #
         #             chosen = idx[np.argmax(obj_func)];
-        return chosen, radius_sq
+        return chosen
 
     def estimate_empirical_reward_gap(self):
         # print(theta_t.shape)
@@ -121,14 +113,3 @@ class Lin_IMED(Bandit):
         #self.scale_arms()
         #self.gamma_t = calc_gamma_t(self.t,self.d,self.lam,self.delta,self.S,self.R)
         self.t = self.t +  1
-
-    def getDoNotAsk(self):
-        return self.do_not_ask
-
-    def predict(self, X=None):
-        if X is None:
-            X = self.X
-        return X.dot(self.theta_hat)
-
-    def get_debug_dict(self):
-        return self.dbg_dict

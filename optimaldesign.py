@@ -126,6 +126,12 @@ def optimal_probability(X, sVal_opt_design_arms):
     prob_dist = prob_dist/len(sVal_opt_design_arms)
     return prob_dist
 
+def calc_q_opt_design(A):
+    sVal_opt_design_arms, sampling_time = optimal_design_algo(A)
+    prob_dist = optimal_probability(A, sVal_opt_design_arms)
+    return prob_dist
+
+
 def graphical_testing():
     trials = 50
     val_lambda = 0
