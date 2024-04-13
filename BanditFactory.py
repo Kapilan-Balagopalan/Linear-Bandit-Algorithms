@@ -55,7 +55,18 @@ def bandit_factory(name, X, R, S,n):
             'lam': ((R**2))/S**2,
             'R' : R,
             'S': S,
-            'flags': {},
+            'flags': {"version":"fixed"},
+            'N':n
+        };
+        algo = Lin_ZHU(**opt)
+        return algo
+    elif (name == "LinZHU-AT"):
+        opt = {
+            'X': X,
+            'lam': ((R**2))/S**2,
+            'R' : R,
+            'S': S,
+            'flags': {"version":"anytime"},
             'N':n
         };
         algo = Lin_ZHU(**opt)

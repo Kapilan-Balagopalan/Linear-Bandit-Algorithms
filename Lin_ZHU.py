@@ -31,8 +31,10 @@ class Lin_ZHU(Bandit):
         
         self.Delta_empirical_gap = np.ones(self.K)
         self.empirical_best_arm = 0
-
-        self.gamma = calc_gamma_LinZHU(self.N,self.d,self.delta)
+        if(self.flags["version"] == "anytime"):
+            self.gamma = calc_gamma_LinZHU(self.t,self.d,self.delta)
+        else:
+            self.gamma = calc_gamma_LinZHU(self.N,self.d,self.delta)
         self.eta = calc_eta_LinZHU(self.gamma, self.d)
 
     def calc_ZHU_probability_distribution(self,qt,lam_true):
@@ -59,8 +61,14 @@ class Lin_ZHU(Bandit):
         
         qt =  self.opt_design_quo * prob_dist
         qt[self.empirical_best_arm] = qt[self.empirical_best_arm]  + self.empirical_best_quo
+
+        if(self.flags["version"] == "anytime"):
+            self.gamma = calc_gamma_LinZHU(self.t,self.d,self.delta)
+            self.eta = calc_eta_LinZHU(self.gamma, self.d)
+
        
         lam_true = brentq(self.find_lambda, 0.4,1.2, args=(qt))
+
         
         MED_quo = self.calc_ZHU_probability_distribution(qt,lam_true)
         

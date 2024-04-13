@@ -14,7 +14,7 @@ from tqdm import tqdm
 
 def init_end_of_optimism(eps):
     #np.random.seed(seed)
-    noise_sigma = 2
+    noise_sigma = 0.1
     delta = 0.01
     S = 1
     sVal_dimension = d = 2
@@ -38,10 +38,10 @@ eps = 0.005
 
 d, K, n, sVal_lambda, mVal_I, mVal_lvrg_scr_orgn, X, theta_true, noise_sigma, delta, S, best_arm = init_end_of_optimism(eps)
 
-n_algo = 5
+n_algo = 6
 
 algo_list = [None]*n_algo
-algo_names = ["LinZHU","OFUL","Lin-SGMED-1","Lin-SGMED-2","Lin-IMED-1" ]
+algo_names = ["LinZHU","OFUL","Lin-SGMED-1","Lin-SGMED-2","Lin-IMED-1" ,"LinZHU-AT"]
 n_trials = 10
 
 cum_regret_arr=  np.zeros((n_trials,n,n_algo))
