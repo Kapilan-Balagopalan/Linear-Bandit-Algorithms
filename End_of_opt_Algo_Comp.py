@@ -22,7 +22,7 @@ from tqdm import tqdm
 
 def init_end_of_optimism(eps):
     #np.random.seed(seed)
-    noise_sigma = 0.1
+    noise_sigma = 2
     delta = 0.01
     S = 1
     sVal_dimension = d = 2
@@ -42,14 +42,14 @@ def init_end_of_optimism(eps):
            noise_sigma, delta, S, best_arm
 
 
-eps = 0.02
+eps = 0.005
 
 d, K, n, sVal_lambda, mVal_I, mVal_lvrg_scr_orgn, X, theta_true, noise_sigma, delta, S, best_arm = init_end_of_optimism(eps)
 
 n_algo = 5
 
 algo_list = [None]*n_algo
-algo_names = ["OFUL","Lin-SGMED-1","Lin-SGMED-2","Lin-IMED-1","LinZHU" ]
+algo_names = ["LinZHU","OFUL","Lin-SGMED-1","Lin-SGMED-2","Lin-IMED-1" ]
 n_trials = 10
 
 cum_regret_arr=  np.zeros((n_trials,n,n_algo))
@@ -69,7 +69,7 @@ for j in tqdm(range(n_trials)):
     for i in range(n_algo):
         cum_regret = 0
         for t in range(n):
-            arm , radius = algo_list[i].next_arm()
+            arm = algo_list[i].next_arm()
             inst_regret = calc_regret(arm, theta_true, X)
             cum_regret = cum_regret + inst_regret
             cum_regret_arr[j][t][i] =  cum_regret

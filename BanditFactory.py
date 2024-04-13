@@ -66,10 +66,7 @@ def bandit_factory(name, X, R, S,n):
             'R' : R,
             'S': S,
             'flags': {},
-            'n':n,
-            'subsample_func' :None,
-            'multiplier': 1.0,  # the multiplier to the radius_sq,
-            'subsample_rate' : 1.0
+            'N':n
         };
         algo = Lin_ZHU(**opt)
         return algo

@@ -50,7 +50,7 @@ def init(seed,K,n,d):
 
 
 K = 200
-n = 1000
+n = 2000
 d = 20
 
 
@@ -59,6 +59,7 @@ n_algo = 5
 
 algo_list = [None]*n_algo
 algo_names = ["OFUL","Lin-SGMED-1","Lin-SGMED-2","Lin-IMED-1","LinZHU" ]
+#algo_names = ["LinZHU" ]
 n_trials = 10
 
 cum_regret_arr=  np.zeros((n_trials,n,n_algo))
@@ -81,7 +82,8 @@ for j in tqdm(range(n_trials)):
     for i in range(n_algo):
         cum_regret = 0
         for t in range(n):
-            arm , radius = algo_list[i].next_arm()
+            arm  = (algo_list[i].next_arm())[0]
+            #print(arm)
             inst_regret = calc_regret(arm, theta_true, X)
             cum_regret = cum_regret + inst_regret
             cum_regret_arr[j][t][i] =  cum_regret
