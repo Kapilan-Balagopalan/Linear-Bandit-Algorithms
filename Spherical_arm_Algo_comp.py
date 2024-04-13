@@ -46,15 +46,15 @@ def init(seed,K,n,d):
 
 
 K = 200
-n = 2000
+n = 1000
 d = 20
 
 
 
-n_algo = 5
+n_algo = 6
 
 algo_list = [None]*n_algo
-algo_names = ["OFUL","Lin-SGMED-1","Lin-SGMED-2","Lin-IMED-1","LinZHU" ]
+algo_names = ["OFUL","Lin-SGMED-1","Lin-SGMED-2","Lin-IMED-1","LinZHU","LinZHU-AT" ]
 #algo_names = ["LinZHU" ]
 n_trials = 10
 
