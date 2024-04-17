@@ -77,5 +77,7 @@ class Lin_IMED(Bandit):
         self.estimate_empirical_reward_gap(self.X,theta_hat)
 
         if(self.flags["version"] == 1):
-            self.calc_IMED_ver1_index()  
+            self.calc_IMED_ver1_index() 
+        else:
+            raise NotImplementedError() 
         self.t = self.t +  1

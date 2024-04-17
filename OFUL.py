@@ -28,7 +28,12 @@ class Oful(Bandit):
         self.theta_hat = np.zeros(self.d)
         self.Vt = self.lam * np.eye(self.d)
 
-        self.beta_t = calc_beta_t_OFUL(self.t, self.d, self.lam, self.delta, self.S, self.R)
+        if (self.flags["type"] == "EOPT") :
+            self.beta_t = calc_beta_t_LinIMED(self.t, self.d, self.lam, self.delta, self.S, self.R)
+        elif(self.flags["type"] == "Sphere") :
+            self.beta_t = calc_beta_t_OFUL(self.t, self.d, self.lam, self.delta, self.S, self.R)
+        else:
+             raise NotImplementedError() # todo: use valid_idx
 
     def next_arm(self):
         if (self.t == 1):
@@ -60,7 +65,15 @@ class Oful(Bandit):
         self.invVt = np.linalg.inv(self.Vt)
         self.theta_hat = np.dot(self.invVt, self.XTy)
 
-        self.beta_t = calc_beta_t_OFUL(self.t, self.d, self.lam, self.delta, self.S, self.R)
+        if (self.flags["type"] == "EOPT") :
+            self.beta_t = calc_beta_t_LinIMED(self.t, self.d, self.lam, self.delta, self.S, self.R)
+        elif(self.flags["type"] == "Sphere") :
+            self.beta_t = calc_beta_t_OFUL(self.t, self.d, self.lam, self.delta, self.S, self.R)
+        else:
+             raise NotImplementedError() # todo: use valid_idx
+    
+
+        
 
         self.t = self.t  + 1
 

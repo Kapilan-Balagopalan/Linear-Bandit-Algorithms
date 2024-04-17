@@ -19,7 +19,7 @@ def init_end_of_optimism(eps):
     S = 1
     sVal_dimension = d = 2
     sVal_arm_size = K = 3
-    sVal_horizon = n = 1000
+    sVal_horizon = n = 1000000
     sVal_lambda = d
     mVal_I = np.eye(sVal_dimension)
     mVal_lvrg_scr_orgn = sVal_lambda*mVal_I
@@ -34,7 +34,7 @@ def init_end_of_optimism(eps):
            noise_sigma, delta, S, best_arm
 
 
-eps = 0.005
+eps = 0.002
 
 d, K, n, sVal_lambda, mVal_I, mVal_lvrg_scr_orgn, X, theta_true, noise_sigma, delta, S, best_arm = init_end_of_optimism(eps)
 
@@ -46,7 +46,7 @@ n_trials = 10
 
 cum_regret_arr=  np.zeros((n_trials,n,n_algo))
 
-
+test_type = "EOPT"
 
 
 for j in tqdm(range(n_trials)):
@@ -55,7 +55,7 @@ for j in tqdm(range(n_trials)):
     R= noise_sigma
     i = 0
     for name in algo_names:
-        algo_list[i] = bandit_factory(name,X,R,S,n)
+        algo_list[i] = bandit_factory(test_type,name,X,R,S,n)
         i = i+1
 
     cum_regret = 0

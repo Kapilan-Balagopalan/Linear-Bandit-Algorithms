@@ -46,7 +46,7 @@ def init(seed,K,n,d):
 
 
 K = 200
-n = 1000
+n = 10000
 d = 20
 
 
@@ -60,7 +60,7 @@ n_trials = 10
 
 cum_regret_arr=  np.zeros((n_trials,n,n_algo))
 
-
+test_type = "Sphere"
 
 
 for j in tqdm(range(n_trials)):
@@ -71,7 +71,7 @@ for j in tqdm(range(n_trials)):
     R= noise_sigma
     i = 0
     for name in algo_names:
-        algo_list[i] = bandit_factory(name,X,R,S,n)
+        algo_list[i] = bandit_factory(test_type,name,X,R,S,n)
         i = i+1
 
     cum_regret = 0
