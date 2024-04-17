@@ -28,8 +28,8 @@ class Lin_SGMED(Bandit):
         self.invVt = np.eye(self.d) / self.lam
         self.Vt = self.lam * np.eye(self.d)
 
-        self.empirical_best_quo = opt_coeff
-        self.opt_design_quo = 1 - opt_coeff
+        self.empirical_best_quo = 1 - opt_coeff
+        self.opt_design_quo = opt_coeff
         self.AugX = self.X.copy()
 
         self.MED_quo = np.ones(self.K)
