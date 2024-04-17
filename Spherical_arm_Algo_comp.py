@@ -47,7 +47,7 @@ def init(seed,K,n,d):
 
 K = 200
 n = 10000
-d = 20
+d = 2
 
 
 
@@ -56,12 +56,12 @@ n_algo = 6
 algo_list = [None]*n_algo
 algo_names = ["OFUL","Lin-SGMED-1","Lin-SGMED-2","Lin-IMED-1","LinZHU","LinZHU-AT" ]
 #algo_names = ["LinZHU" ]
-n_trials = 10
+n_trials = 20
 
 cum_regret_arr=  np.zeros((n_trials,n,n_algo))
 
 test_type = "Sphere"
-
+opt_coeff = 0.5
 
 for j in tqdm(range(n_trials)):
     #seed = np.random.randint(1, 15751)
@@ -71,7 +71,7 @@ for j in tqdm(range(n_trials)):
     R= noise_sigma
     i = 0
     for name in algo_names:
-        algo_list[i] = bandit_factory(test_type,name,X,R,S,n)
+        algo_list[i] = bandit_factory(test_type,name,X,R,S,n,opt_coeff)
         i = i+1
 
     cum_regret = 0

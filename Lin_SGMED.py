@@ -11,7 +11,7 @@ from Bandit_Env import *
 #meaning full names will not have vowels in it e.g leverage = 'lvrg'
 class Lin_SGMED(Bandit):
     ########################################
-    def __init__(self, X, lam, R, S, flags):
+    def __init__(self, X, lam, R, S, opt_coeff, flags):
         self.X = X
         self.R = R
         self.lam = lam
@@ -28,8 +28,8 @@ class Lin_SGMED(Bandit):
         self.invVt = np.eye(self.d) / self.lam
         self.Vt = self.lam * np.eye(self.d)
 
-        self.empirical_best_quo = 0.5
-        self.opt_design_quo = 0.5
+        self.empirical_best_quo = opt_coeff
+        self.opt_design_quo = 1 - opt_coeff
         self.AugX = self.X.copy()
 
         self.MED_quo = np.ones(self.K)

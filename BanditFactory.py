@@ -4,7 +4,7 @@ from Lin_ZHU import *
 from OFUL import *
 from Bandit_Env import *
 
-def bandit_factory(test_type,name, X, R, S,n):
+def bandit_factory(test_type,name, X, R, S,n,opt_coeff):
     K, d = X.shape
     if(test_type == "EOPT"):
         if (name == "OFUL"):
@@ -26,6 +26,7 @@ def bandit_factory(test_type,name, X, R, S,n):
                 'lam': (d)/S**2,
                 'R' : R,
                 'S': S,
+                'opt_coeff' : opt_coeff,
                 'flags': {"version":1,"type":"EOPT"}
             };
             algo = Lin_SGMED(**opt)
@@ -36,6 +37,7 @@ def bandit_factory(test_type,name, X, R, S,n):
                 'lam': (d)/S**2,
                 'R' : R,
                 'S': S,
+                'opt_coeff' : opt_coeff,
                 'flags': {"version":2, "type":"EOPT"}
             };
             algo = Lin_SGMED(**opt)
@@ -94,6 +96,7 @@ def bandit_factory(test_type,name, X, R, S,n):
                 'lam': ((R**2)*d)/S**2,
                 'R' : R,
                 'S': S,
+                'opt_coeff' : opt_coeff,
                 'flags': {"version":1,"type":"Sphere"}
             };
             algo = Lin_SGMED(**opt)
@@ -104,6 +107,7 @@ def bandit_factory(test_type,name, X, R, S,n):
                 'lam': ((R**2)*d)/S**2,
                 'R' : R,
                 'S': S,
+                'opt_coeff' : opt_coeff,
                 'flags': {"version":2, "type":"Sphere"}
             };
             algo = Lin_SGMED(**opt)
