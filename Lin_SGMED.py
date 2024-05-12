@@ -11,28 +11,34 @@ from Bandit_Env import *
 #meaning full names will not have vowels in it e.g leverage = 'lvrg'
 class Lin_SGMED(Bandit):
     ########################################
-    def __init__(self, X, lam, R, S, opt_coeff, flags):
+    def __init__(self, X, R, S, opt_coeff,emp_coeff, flags):
         self.X = X
         self.R = R
-        self.lam = lam
-        self.delta = .01
         self.S = S
         self.flags = flags
+        self.K, self.d = self.X.shape
+        if(self.flags["type"] == "EOPT"):
+            self.lam = (self.d)*(self.R**2)/self.S**2
+        elif(self.flags["type"] == "Sphere"):
+            self.lam = (self.d*(self.R**2))/self.S**2
+        self.delta = .01
 
         # more instance variables
         self.t = 1
-        self.K, self.d = self.X.shape
+        
 
 
         self.XTy = np.zeros(self.d)
         self.invVt = np.eye(self.d) / self.lam
         self.Vt = self.lam * np.eye(self.d)
 
-        self.empirical_best_quo = 1 - opt_coeff
+        self.empirical_best_quo = emp_coeff
         self.opt_design_quo = opt_coeff
+        self.each_arm_coeff = (1 - emp_coeff - opt_coeff)/self.K
         self.AugX = self.X.copy()
 
         self.MED_quo = np.ones(self.K)
+        self.All_arm = np.ones(self.K)
 
         self.Delta_empirical_gap = np.ones(self.K)
         self.empirical_best_arm = 0
@@ -42,12 +48,12 @@ class Lin_SGMED(Bandit):
         #valid_idx = np.setdiff1d(np.arange(self.K), self.do_not_ask)
         prob_dist = calc_q_opt_design(self.AugX)
         if (self.t == 1):
-            MED_prob_dist = prob_dist / np.sum(prob_dist)
+            MED_prob_dist = (prob_dist / np.sum(prob_dist))*self.opt_design_quo + (1-self.opt_design_quo)*self.All_arm / self.K
 
             Arm_t, chosen = sample_action(self.X, MED_prob_dist)
             return chosen
         
-        qt =  self.opt_design_quo * prob_dist
+        qt =  self.opt_design_quo * prob_dist + (self.each_arm_coeff)*self.All_arm
         qt[self.empirical_best_arm] = qt[self.empirical_best_arm]  + self.empirical_best_quo
 
         MED_prob_dist = np.multiply(qt, self.MED_quo)

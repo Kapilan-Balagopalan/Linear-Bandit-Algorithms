@@ -17,6 +17,8 @@ def sample_action(A,MED_prob_dist):
     ind = np.random.choice(K, 1, p= MED_prob_dist)
     return A[ind,:], ind
 
+def calc_eta_t_EXP2(t,d,K):
+        return np.sqrt(np.log(K)/(3*d*t))
 
 def calc_sqrt_beta_det2(d,t,R,ridge,delta,S,logdetV):
   return R * np.sqrt( logdetV - d*np.log(ridge) + np.log (1/(delta**2)) ) + np.sqrt(ridge) * S
@@ -40,6 +42,10 @@ def calc_regret(chosen_arm, theta_true, A):
     return inst_regret
 
 def calc_gamma_t_SGMED(t,d,sVal_lambda,delta,S,noise_sigma):
+    gamma_t = (noise_sigma*np.sqrt(d*np.log(1 + t/(sVal_lambda*d)) + 2*np.log(2/delta)) + np.sqrt(sVal_lambda)*S)**2
+    return gamma_t
+
+def calc_gamma_t_EXP2(t,d,sVal_lambda,delta,S,noise_sigma):
     gamma_t = (noise_sigma*np.sqrt(d*np.log(1 + t/(sVal_lambda*d)) + 2*np.log(2/delta)) + np.sqrt(sVal_lambda)*S)**2
     return gamma_t
 

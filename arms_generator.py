@@ -19,3 +19,10 @@ def sample_end_of_optimism(eps):
     A[2, 0] = 1 - eps
     A[2, 1] = 2*eps
     return A
+def sample_problem_dependent_experiment():
+    A = np.zeros((2,2))
+    A[0, 0] = 1
+    A[0, 1] = 0
+    A[1, 0] = 0
+    A[1, 1] = 1
+    return A

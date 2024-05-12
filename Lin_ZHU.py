@@ -7,13 +7,16 @@ from scipy.optimize import brentq
 
 class Lin_ZHU(Bandit):
     ########################################
-    def __init__(self, X, lam, R, S,N, flags):
+    def __init__(self, X, R, S,N, flags):
         self.X = X
         self.R = R
-        self.lam = lam
-        self.delta = .01
         self.S = S
         self.flags = flags
+        if(self.flags["type"] == "EOPT"):
+            self.lam = (self.R**2)/self.S**2
+        elif(self.flags["type"] == "Sphere"):
+            self.lam =(self.R**2)/self.S**2
+        self.delta = .01
         self.N = N
 
 
@@ -32,7 +35,7 @@ class Lin_ZHU(Bandit):
         self.Delta_empirical_gap = np.ones(self.K)
         self.empirical_best_arm = 0
         if(self.flags["version"] == "anytime"):
-            self.gamma = calc_gamma_LinZHU(self.t,self.d,self.delta)
+            self.gamma = calc_gamma_LinZHU(self.t + 1,self.d,self.delta)
         else:
             self.gamma = calc_gamma_LinZHU(self.N,self.d,self.delta)
         self.eta = calc_eta_LinZHU(self.gamma, self.d)
@@ -63,7 +66,7 @@ class Lin_ZHU(Bandit):
         qt[self.empirical_best_arm] = qt[self.empirical_best_arm]  + self.empirical_best_quo
 
         if(self.flags["version"] == "anytime"):
-            self.gamma = calc_gamma_LinZHU(self.t,self.d,self.delta)
+            self.gamma = calc_gamma_LinZHU(self.t + 1 ,self.d,self.delta)
             self.eta = calc_eta_LinZHU(self.gamma, self.d)
 
        

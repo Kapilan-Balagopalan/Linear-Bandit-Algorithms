@@ -2,13 +2,16 @@ from Bandit_Env import *
 
 class Oful(Bandit):
 ########################################
-    def __init__(self, X, lam, R, S, flags, subsample_func=None, subsample_rate=1.0, multiplier=1.0):
+    def __init__(self, X, R, S, flags, subsample_func=None, subsample_rate=1.0, multiplier=1.0):
         self.X = X
         self.R = R
-        self.lam = lam
-        self.delta = .01
         self.S = S
         self.flags = flags
+        if(self.flags["type"] == "EOPT"):
+            self.lam = (self.R**2)/self.S**2
+        elif(self.flags["type"] == "Sphere"):
+            self.lam = self.R**2/self.S**2
+        self.delta = .01
         self.multiplier = float(multiplier)
 
         # more instance variables
