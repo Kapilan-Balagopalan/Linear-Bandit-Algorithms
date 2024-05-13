@@ -4,6 +4,7 @@ from Lin_ZHU import *
 from OFUL import *
 from Bandit_Env import *
 from Lin_EXP2 import *
+from Lin_TS_Freq import *
 
 def bandit_factory(test_type,name, X, R, S,n,opt_coeff,emp_coeff):
     K, d = X.shape
@@ -18,6 +19,16 @@ def bandit_factory(test_type,name, X, R, S,n,opt_coeff,emp_coeff):
             'subsample_rate' : 1.0
         };
         algo = Oful(**opt)
+        return algo
+    if (name == "Lin-TS-Freq"):
+        opt = {
+            'X': X,
+            'R' : R,
+            'S': S,
+            'N':n,
+            'flags': {"version": None,"type":test_type},
+        };
+        algo = Lin_TS_FREQ(**opt)
         return algo
     if (name == "EXP2"):
         opt = {

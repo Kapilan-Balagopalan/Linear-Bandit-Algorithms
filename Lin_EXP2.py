@@ -53,6 +53,8 @@ class Lin_EXP2(Bandit):
         
         exploit_part =  np.matmul(self.X, self.theta_est) 
         self.eta_t = calc_eta_t_EXP2(self.t + 1,self.d,self.K)
+        if(self.eta_t > 1/self.d):
+            self.eta_t  = 1/self.d
         self.gamma_t = self.d*self.eta_t     
 
         exploit_part = np.exp(exploit_part*self.eta_t)

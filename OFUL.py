@@ -65,7 +65,13 @@ class Oful(Bandit):
         self.XTy += (y_t) * xt
         self.Vt += np.outer(xt,xt)
 
-        self.invVt = np.linalg.inv(self.Vt)
+        self.invVt = find_matrix_inverse_vt_method_fast(self.invVt, xt)
+
+        #self.invVt  = find_matrix_inverse_vt_method_conventional(self.Vt)
+
+        
+
+        #self.invVt = np.linalg.inv(self.Vt)
         self.theta_hat = np.dot(self.invVt, self.XTy)
 
         if (self.flags["type"] == "EOPT") :

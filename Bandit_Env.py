@@ -23,6 +23,15 @@ def calc_eta_t_EXP2(t,d,K):
 def calc_sqrt_beta_det2(d,t,R,ridge,delta,S,logdetV):
   return R * np.sqrt( logdetV - d*np.log(ridge) + np.log (1/(delta**2)) ) + np.sqrt(ridge) * S
 
+def find_matrix_inverse_vt_method_conventional(Vt):
+    invVt = np.linalg.inv(Vt)
+    return invVt
+def find_matrix_inverse_vt_method_fast(invVt, xt):
+    tempval1 = np.dot(invVt, xt)    
+    tempval2 = np.dot(tempval1, xt)   
+    invVt -= np.outer(tempval1, tempval1) / (1 + tempval2) 
+    return invVt
+
 
 def calc_expected_regret(best_arm,theta_true, MED_prob_dist,A):
     mVal_reward= np.matmul(A, theta_true)

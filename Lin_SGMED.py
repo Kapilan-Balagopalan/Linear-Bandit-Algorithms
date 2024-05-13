@@ -104,7 +104,8 @@ class Lin_SGMED(Bandit):
         self.XTy = self.XTy +  y_t * xt
         self.Vt =  self.Vt + np.outer(xt, xt)
       
-        self.invVt = np.linalg.inv(self.Vt )
+        #self.invVt = np.linalg.inv(self.Vt )
+        self.invVt = find_matrix_inverse_vt_method_fast(self.invVt, xt)
 
         theta_hat = np.matmul(self.invVt, self.XTy.T)
  

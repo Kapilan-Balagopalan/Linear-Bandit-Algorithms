@@ -21,7 +21,7 @@ from tqdm import tqdm
 
 def init(seed,K,n,d):
     np.random.seed(seed)
-    noise_sigma = 1
+    noise_sigma = 0.1
     delta = 0.01
     S = 1
     sVal_dimension = d
@@ -45,9 +45,9 @@ def init(seed,K,n,d):
 
 
 
-K = 200
+K = 10
 n = 10000
-d = 2
+d = 20
 
 
 
@@ -55,7 +55,7 @@ n_algo = 2
 
 algo_list = [None]*n_algo
 #algo_names = ["EXP2","OFUL","Lin-SGMED-1","Lin-SGMED-2","Lin-IMED-1","LinZHU","LinZHU-AT" ]
-algo_names = ["EXP2" ,"OFUL"]
+algo_names = ["OFUL", "Lin-TS-Freq"]
 n_trials = 10
 
 cum_regret_arr=  np.zeros((n_trials,n,n_algo))
