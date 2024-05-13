@@ -20,7 +20,7 @@ class Lin_TS_FREQ(Bandit):
         self.N = N
         self.delta = .01
         self.delta_ts = self.delta 
-        self.oversample_coeff = 0.2
+        self.oversample_coeff = 1
         if(self.flags["type"] == "EOPT"):
             self.lam = (self.R**2)/(self.S**2)
         elif(self.flags["type"] == "Sphere"):

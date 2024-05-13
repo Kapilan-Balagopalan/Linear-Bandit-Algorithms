@@ -12,6 +12,9 @@ from BanditFactory import *
 
 import ipdb
 
+from datetime import datetime
+
+import os 
 
 
 from tqdm import tqdm
@@ -45,24 +48,24 @@ def init(seed,K,n,d):
 
 
 
-K = 10
+K = 100
 n = 10000
-d = 20
+d = 10
 
 
 
-n_algo = 2
+n_algo = 9
 
 algo_list = [None]*n_algo
-#algo_names = ["EXP2","OFUL","Lin-SGMED-1","Lin-SGMED-2","Lin-IMED-1","LinZHU","LinZHU-AT" ]
-algo_names = ["OFUL", "Lin-TS-Freq"]
+algo_names = ["EXP2","OFUL","Lin-SGMED-1","Lin-SGMED-2","Lin-IMED-1","LinZHU","LinZHU-AT","Lin-IMED-3", "Lin-TS-Freq"]
+#algo_names = ["OFUL", "Lin-TS-Freq"]
 n_trials = 10
 
 cum_regret_arr=  np.zeros((n_trials,n,n_algo))
 
 test_type = "Sphere"
-opt_coeff = 0.5
-emp_coeff = 0.5
+opt_coeff = 1/16
+emp_coeff = 15/32
 
 for j in tqdm(range(n_trials)):
     #seed = np.random.randint(1, 15751)
@@ -98,7 +101,16 @@ print(cum_regret_mean.shape)
 cum_regret_confidence_up = cum_regret_mean + (t_alpha * cum_regret_mean_std)/np.sqrt(n_trials)
 cum_confidence_down = cum_regret_mean - (t_alpha * cum_regret_mean_std)/np.sqrt(n_trials)
 
+now = datetime.now() # current date and time
+date_time = now.strftime("%m%d%Y%H%M%S")
 
+script_name = os.path.basename(__file__)
+file_name = os.path.splitext(script_name)[0] +  date_time + '.npy'
+
+with open(file_name, 'wb') as f:
+
+    np.save(f, cum_regret_arr)
+    np.save(f,algo_names)
 
 i=0
 
