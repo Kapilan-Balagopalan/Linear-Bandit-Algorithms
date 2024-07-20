@@ -2,7 +2,7 @@ from Bandit_Env import *
 
 class Oful(Bandit):
 ########################################
-    def __init__(self, X, R, S, flags, subsample_func=None, subsample_rate=1.0, multiplier=1.0):
+    def __init__(self, X, R, S,N, flags):
         self.X = X
         self.R = R
         self.S = S
@@ -12,16 +12,10 @@ class Oful(Bandit):
         elif(self.flags["type"] == "Sphere"):
             self.lam = self.R**2/self.S**2
         self.delta = .01
-        self.multiplier = float(multiplier)
-        self.Noise_Mismatch = 5
         # more instance variables
         self.t = 1
         self.K, self.d = self.X.shape
 
-        #- subsampling aspect
-        assert subsample_func == None
-        self.subN = np.round(self.K* float(subsample_rate)).astype(int)
-        self.subsample_func = subsample_func
 
         self.XTy = np.zeros(self.d)
         self.invVt = np.eye(self.d) / self.lam
@@ -32,7 +26,7 @@ class Oful(Bandit):
         self.Vt = self.lam * np.eye(self.d)
 
         if (self.flags["type"] == "EOPT") :
-            self.beta_t = self.Noise_Mismatch*calc_beta_t_OFUL(self.t, self.d, self.lam, self.delta, self.S, self.R)
+            self.beta_t = calc_beta_t_OFUL(self.t, self.d, self.lam, self.delta, self.S, self.R)
         elif(self.flags["type"] == "Sphere") :
             self.beta_t = calc_beta_t_OFUL(self.t, self.d, self.lam, self.delta, self.S, self.R)
         else:
@@ -42,16 +36,14 @@ class Oful(Bandit):
         if (self.t == 1):
             return np.random.randint(self.K) 
         
-        if (self.subsample_func == None):
-            radius_sq = self.multiplier * self.beta_t
-            #obj_func = np.dot(self.X, self.theta_hat) + np.sqrt(radius_sq) * np.sqrt(self.X_invVt_norm_sq)
-            obj_func = np.zeros(self.K)
-            for i in range(self.K):
-                obj_func[i] = np.dot(self.X[i], self.theta_hat) + np.sqrt(radius_sq) * np.sqrt(
-                    np.matmul(np.matmul(self.X[i].T, self.invVt), self.X[i]))
-            chosen = np.argmax(obj_func)
-        else:
-            raise NotImplementedError() # todo: use valid_idx
+
+        radius_sq = self.beta_t
+        #obj_func = np.dot(self.X, self.theta_hat) + np.sqrt(radius_sq) * np.sqrt(self.X_invVt_norm_sq)
+        obj_func = np.zeros(self.K)
+        for i in range(self.K):
+            obj_func[i] = np.dot(self.X[i], self.theta_hat) + np.sqrt(radius_sq) * np.sqrt(
+            np.matmul(np.matmul(self.X[i].T, self.invVt), self.X[i]))
+        chosen = np.argmax(obj_func)
         return chosen
 
     def update(self, pulled_idx, y_t):
@@ -75,7 +67,7 @@ class Oful(Bandit):
         self.theta_hat = np.dot(self.invVt, self.XTy)
 
         if (self.flags["type"] == "EOPT") :
-            self.beta_t = self.Noise_Mismatch*calc_beta_t_OFUL(self.t, self.d, self.lam, self.delta, self.S, self.R)
+            self.beta_t = calc_beta_t_OFUL(self.t, self.d, self.lam, self.delta, self.S, self.R)
         elif(self.flags["type"] == "Sphere") :
             self.beta_t = calc_beta_t_OFUL(self.t, self.d, self.lam, self.delta, self.S, self.R)
         else:

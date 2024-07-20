@@ -4,13 +4,18 @@ from Bandit_Env import *
 
 
 
+#all the scalar values will start with sVal
+#all the vector values will start with vVal
+#all the matrix values will start with mVal
+#underscore will be used to divide words
+#meaning full names will not have vowels in it e.g leverage = 'lvrg'
 class Lin_SGMED(Bandit):
     ########################################
     def __init__(self, X, R, S,N ,opt_coeff,emp_coeff, flags):
         self.X = X
         self.R = R
-        self.N = N
         self.S = S
+        self.N = N
         self.delta = .01
         self.flags = flags
         self.K, self.d = self.X.shape

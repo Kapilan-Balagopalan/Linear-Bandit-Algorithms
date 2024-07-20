@@ -11,7 +11,6 @@ class Lin_ZHU(Bandit):
         self.X = X
         self.R = R
         self.S = S
-        self.Noise_Mismatch = 5
         self.flags = flags
         if(self.flags["type"] == "EOPT"):
             self.lam = (self.R**2)/self.S**2

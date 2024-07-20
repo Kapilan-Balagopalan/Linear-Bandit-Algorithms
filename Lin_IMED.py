@@ -9,11 +9,10 @@ from Bandit_Env import *
 #meaning full names will not have vowels in it e.g leverage = 'lvrg'
 class Lin_IMED(Bandit):
     ########################################
-    def __init__(self, X, R, S, flags):
+    def __init__(self, X, R, S,N, flags):
         self.X = X
         self.R = R
         self.S = S
-        self.Noise_Mismatch = 5
         self.flags = flags
         if(self.flags["type"] == "EOPT"):
             self.lam = (self.R**2)/self.S**2
@@ -38,7 +37,7 @@ class Lin_IMED(Bandit):
         
 
         if(self.flags["type"] == "EOPT"):
-            self.beta_t = self.Noise_Mismatch *calc_beta_t_OFUL(self.t,self.d,self.lam,self.delta,self.S,self.R)
+            self.beta_t = calc_beta_t_OFUL(self.t,self.d,self.lam,self.delta,self.S,self.R)
         elif(self.flags["type"] == "Sphere"):
             self.beta_t = calc_beta_t_OFUL(self.t,self.d,self.lam,self.delta,self.S,self.R)
 
@@ -107,7 +106,7 @@ class Lin_IMED(Bandit):
         theta_hat = np.matmul(self.invVt, self.XTy.T)
 
         if(self.flags["type"] == "EOPT"):
-            self.beta_t = self.Noise_Mismatch *calc_beta_t_OFUL(self.t,self.d,self.lam,self.delta,self.S,self.R)
+            self.beta_t = calc_beta_t_OFUL(self.t,self.d,self.lam,self.delta,self.S,self.R)
         elif(self.flags["type"] == "Sphere"):
             self.beta_t = calc_beta_t_OFUL(self.t,self.d,self.lam,self.delta,self.S,self.R)
         
