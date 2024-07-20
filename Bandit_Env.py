@@ -4,7 +4,7 @@ import ipdb
 
 def calc_gamma_LinZHU(N,d, delta):
     c_OPT = 4
-    gamma = np.power(((3*N*np.sqrt(c_OPT)*np.sqrt(d))/(2*d*np.log(N)) + 64 *np.log(2/delta) ),2/3)
+    gamma = np.sqrt((c_OPT*d*N)/(d*np.log(N) + 32*np.log(2/delta)))
     return gamma
 
 def calc_eta_LinZHU(gamma,d):

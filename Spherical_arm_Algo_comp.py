@@ -26,7 +26,7 @@ def init(seed,K,n,d):
     np.random.seed(seed)
     noise_sigma = 0.1
     delta = 0.01
-    S = 1
+    S_true = 1
     sVal_dimension = d
     sVal_arm_size = K
     sVal_horizon = n
@@ -37,45 +37,54 @@ def init(seed,K,n,d):
     theta_true = np.random.randn(d, 1)
     #print(theta_true.shape)
     #print(A.shape)
-    theta_true = S*(theta_true/ (np.linalg.norm(theta_true, axis=0)))
+    theta_true = S_true*(theta_true/ (np.linalg.norm(theta_true, axis=0)))
     best_arm = np.argmax(np.matmul(A, theta_true))
     # print(best_arm)
     return sVal_dimension, sVal_arm_size,sVal_horizon, sVal_lambda, mVal_I, mVal_lvrg_scr_orgn, sVal_arm_set, theta_true,\
-           noise_sigma, delta, S, best_arm
+           noise_sigma, delta, S_true, best_arm
 
 
 
 
 
 
-K = 100
-n = 10000
-d = 10
+K = 200
+n = 3000
+d = 2
 
 
 
-n_algo = 9
+n_algo = 10
 
 algo_list = [None]*n_algo
-algo_names = ["EXP2","OFUL","Lin-SGMED-1","Lin-SGMED-2","Lin-IMED-1","LinZHU","LinZHU-AT","Lin-IMED-3", "Lin-TS-Freq"]
+algo_names = ["LinZHU","OFUL","Lin-IMED-1","Lin-IMED-3","LinZHU-AT","EXP2", "Lin-TS-Freq", "LinMED","LinMED","LinMED"]
 #algo_names = ["OFUL", "Lin-TS-Freq"]
-n_trials = 10
+n_trials = 30
+
+
+
+emp_coeff = [0.99,0.9,0.5]
+opt_coeff = [0.005,0.05,0.25]
+c_gamma = 0.5
 
 cum_regret_arr=  np.zeros((n_trials,n,n_algo))
 
 test_type = "Sphere"
-opt_coeff = 1/16
-emp_coeff = 15/32
+Noise_Mismatch = 1
+Norm_Mismatch = 1
 
 for j in tqdm(range(n_trials)):
     #seed = np.random.randint(1, 15751)
-    seed = 15751 + j
-    d, K, n, sVal_lambda, mVal_I, mVal_lvrg_scr_orgn, X, theta_true, noise_sigma, delta, S, best_arm = init(seed, K, n,
+    seed = 1597543456 + j
+    d, K, n, sVal_lambda, mVal_I, mVal_lvrg_scr_orgn, X, theta_true, noise_sigma, delta, S_true, best_arm = init(seed, K, n,
                                                                                                             d)
-    R= noise_sigma
+    R_true = noise_sigma
     i = 0
     for name in algo_names:
-        algo_list[i] = bandit_factory(test_type,name,X,R,S,n,opt_coeff,emp_coeff)
+        if(i < 7):
+            algo_list[i] = bandit_factory(test_type,name,X,R_true*Noise_Mismatch,S_true*Norm_Mismatch ,n,opt_coeff[0],emp_coeff[0])
+        else :
+            algo_list[i] = bandit_factory(test_type,name,X,R_true*Noise_Mismatch,S_true*Norm_Mismatch,n,opt_coeff[i-7],emp_coeff[i-7])
         i = i+1
 
     cum_regret = 0
@@ -90,7 +99,7 @@ for j in tqdm(range(n_trials)):
             algo_list[i].update(arm,reward)
         
 
-t_alpha = 1
+t_alpha = 0.6
 
 
 cum_regret_mean = np.sum(cum_regret_arr, axis=0)/n_trials
@@ -101,27 +110,50 @@ print(cum_regret_mean.shape)
 cum_regret_confidence_up = cum_regret_mean + (t_alpha * cum_regret_mean_std)/np.sqrt(n_trials)
 cum_confidence_down = cum_regret_mean - (t_alpha * cum_regret_mean_std)/np.sqrt(n_trials)
 
+
+name_common = "d="+ str(d) + "K=" + str(K)
 now = datetime.now() # current date and time
 date_time = now.strftime("%m%d%Y%H%M%S")
 
 script_name = os.path.basename(__file__)
-file_name = os.path.splitext(script_name)[0] +  date_time + '.npy'
+file_name = os.path.splitext(script_name)[0] +name_common +  date_time + '.npy'
 
 with open(file_name, 'wb') as f:
 
     np.save(f, cum_regret_arr)
     np.save(f,algo_names)
 
-i=0
 
-for name in algo_list:
-    plt.plot(np.arange(n), cum_regret_mean[:,i] , label=algo_names[i])
-    plt.fill_between(np.arange(n),cum_regret_confidence_up[:,i], cum_confidence_down[:,i], alpha=.3)
+
+
+n_algo = 10
+
+algo_list = [None]*n_algo
+algo_names = ['SpannerIGW', 'OFUL' ,'Lin-IMED-1' ,'Lin-IMED-3',
+ 'SpannerIGW-Anytime', 'EXP2' ,'Lin-TS-Freq',r'$\text{LinMED}(\alpha_{\text{emp}} = 0.99)$',
+ r'$\text{LinMED}(\alpha_{\text{emp}} = 0.90)$', r'$\text{LinMED}(\alpha_{\text{emp}} = 0.50)$']
+
+algo_color = ['black',"red","lime", "darkgreen","gray","yellow", "saddlebrown", "magenta","darkmagenta","darkviolet","dodgerblue","blue","midnightblue"]
+
+n_trials = 30
+
+
+
+i=0
+for name in algo_names:
+    plt.plot(np.arange(n), cum_regret_mean[:,i] , label=algo_names[i],color = algo_color[i])
+    plt.fill_between(np.arange(n),cum_regret_confidence_up[:,i], cum_confidence_down[:,i], alpha=.3,color = algo_color[i])
     i = i + 1
 
+
 # Naming the x-axis, y-axis and the whole graph
+
+name_eps = "IMG" +  "-d="+ str(d) + "-K=" + str(K) + "HT"+".eps"
+name_png = "IMG" +  "-d="+ str(d) + "-K=" + str(K)  + "HT" + ".png"
 plt.xlabel("Time")
 plt.ylabel("Regret")
 plt.title("Regret with time")
 plt.legend()
-plt.show()
+plt.savefig(name_eps,format = 'eps',dpi=300)
+plt.savefig(name_png, format = 'png')
+plt.show() 

@@ -26,7 +26,7 @@ def init(seed,K,n,d):
     np.random.seed(seed)
     noise_sigma = 1
     delta = 0.01
-    S = 1
+    S_true = 1
     sVal_dimension = d
     sVal_arm_size = K
     sVal_horizon = n
@@ -37,11 +37,11 @@ def init(seed,K,n,d):
     theta_true = np.random.randn(d, 1)
     #print(theta_true.shape)
     #print(A.shape)
-    theta_true = S*(theta_true/ (np.linalg.norm(theta_true, axis=0)))
+    theta_true = S_true*(theta_true/ (np.linalg.norm(theta_true, axis=0)))
     best_arm = np.argmax(np.matmul(A, theta_true))
     # print(best_arm)
     return sVal_dimension, sVal_arm_size,sVal_horizon, sVal_lambda, mVal_I, mVal_lvrg_scr_orgn, sVal_arm_set, theta_true,\
-           noise_sigma, delta, S, best_arm
+           noise_sigma, delta, S_true, best_arm
 
 
 
@@ -67,7 +67,8 @@ exp_ind  = np.arange(n_exp_ind)
 
 cum_regret_arr=  np.zeros((n_trials,n,n_algo,n_exp_ind))
 
-
+Noise_Mismatch = 1
+Norm_Mismatch = 1
 
 opt_coeff_arr = np.power(0.5,np.arange(n_exp_ind))
 emp_coeff = 0
@@ -81,12 +82,12 @@ for k in range(len(opt_coeff_arr)):
     for j in tqdm(range(n_trials)):
         #seed = np.random.randint(1, 15751)
         seed = 15751 + j
-        d, K, n, sVal_lambda, mVal_I, mVal_lvrg_scr_orgn, X, theta_true, noise_sigma, delta, S, best_arm = init(seed, K, n,
+        d, K, n, sVal_lambda, mVal_I, mVal_lvrg_scr_orgn, X, theta_true, noise_sigma, delta, S_true, best_arm = init(seed, K, n,
                                                                                                                 d)
-        R= noise_sigma
+        R_true= noise_sigma
         i = 0
         for name in algo_names:
-            algo_list[i] = bandit_factory(test_type,name,X,R,S,n,opt_coeff,emp_coeff)
+            algo_list[i] = bandit_factory(test_type,name,X,R_true*Noise_Mismatch,S_true*Norm_Mismatch,n,opt_coeff,emp_coeff)
             i = i+1
 
         cum_regret = 0

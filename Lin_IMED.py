@@ -13,6 +13,7 @@ class Lin_IMED(Bandit):
         self.X = X
         self.R = R
         self.S = S
+        self.Noise_Mismatch = 5
         self.flags = flags
         if(self.flags["type"] == "EOPT"):
             self.lam = (self.R**2)/self.S**2
@@ -33,9 +34,13 @@ class Lin_IMED(Bandit):
 
         self.theta_hat = np.zeros(self.d)
         self.Vt = self.lam * np.eye(self.d)
-        self.beta_t = calc_beta_t_LinIMED(self.t,self.d,self.lam,self.delta,self.S,self.R)
 
-       
+        
+
+        if(self.flags["type"] == "EOPT"):
+            self.beta_t = self.Noise_Mismatch *calc_beta_t_OFUL(self.t,self.d,self.lam,self.delta,self.S,self.R)
+        elif(self.flags["type"] == "Sphere"):
+            self.beta_t = calc_beta_t_OFUL(self.t,self.d,self.lam,self.delta,self.S,self.R)
 
         self.MED_quo = np.ones(self.K)
         self.empirical_best_quo = 0.5
@@ -48,7 +53,7 @@ class Lin_IMED(Bandit):
 
         self.best_ucb_arm = 0
         self.worst_ucb_arm = 0
-        self.C = 1
+        self.C = 30
 
     def next_arm(self):
         #valid_idx = np.setdiff1d(np.arange(self.K), self.do_not_ask)
@@ -87,7 +92,7 @@ class Lin_IMED(Bandit):
             self.MED_quo[i] = ((self.Delta_empirical_gap[i]**2)/((self.beta_t)*vVal_lev_score_a)) - np.log((self.beta_t)*vVal_lev_score_a)
         a = self.X[self.best_ucb_arm, :]
         vVal_lev_score_a = np.matmul(np.matmul(a.T, self.invVt), a)
-        self.MED_quo[self.best_ucb_arm] = np.minimum(np.log(self.C/self.Delta_empirical_gap[self.worst_ucb_arm]) , -np.log((self.beta_t)*vVal_lev_score_a) )
+        self.MED_quo[self.best_ucb_arm] = np.minimum(np.log(self.C/(self.Delta_empirical_gap[self.worst_ucb_arm]**2)) , -np.log((self.beta_t)*vVal_lev_score_a) )
 
     def update(self, pulled_idx, y_t):
 
@@ -101,7 +106,10 @@ class Lin_IMED(Bandit):
 
         theta_hat = np.matmul(self.invVt, self.XTy.T)
 
-        self.beta_t = calc_beta_t_LinIMED(self.t,self.d,self.lam,self.delta,self.S,self.R)
+        if(self.flags["type"] == "EOPT"):
+            self.beta_t = self.Noise_Mismatch *calc_beta_t_OFUL(self.t,self.d,self.lam,self.delta,self.S,self.R)
+        elif(self.flags["type"] == "Sphere"):
+            self.beta_t = calc_beta_t_OFUL(self.t,self.d,self.lam,self.delta,self.S,self.R)
         
         
 

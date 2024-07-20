@@ -20,6 +20,7 @@ class Lin_TS_FREQ(Bandit):
         self.N = N
         self.delta = .01
         self.delta_ts = self.delta 
+        self.Noise_Mismatch = 5
         self.oversample_coeff = 1
         if(self.flags["type"] == "EOPT"):
             self.lam = (self.R**2)/(self.S**2)
@@ -42,7 +43,7 @@ class Lin_TS_FREQ(Bandit):
         self.Vt = self.lam * np.eye(self.d)
 
         if (self.flags["type"] == "EOPT") :
-            self.beta_t = calc_beta_t_LinIMED(self.t, self.d, self.lam, self.delta_ts, self.S, self.R)
+            self.beta_t = self.Noise_Mismatch*calc_beta_t_OFUL(self.t, self.d, self.lam, self.delta_ts, self.S, self.R)
         elif(self.flags["type"] == "Sphere") :
             self.beta_t = calc_beta_t_OFUL(self.t, self.d, self.lam, self.delta_ts, self.S, self.R)
         else:
@@ -94,7 +95,7 @@ class Lin_TS_FREQ(Bandit):
 
 
         if (self.flags["type"] == "EOPT") :
-            self.beta_t = calc_beta_t_LinIMED(self.t, self.d, self.lam, self.delta_ts, self.S, self.R)
+            self.beta_t = self.Noise_Mismatch*calc_beta_t_OFUL(self.t, self.d, self.lam, self.delta_ts, self.S, self.R)
         elif(self.flags["type"] == "Sphere") :
             self.beta_t = calc_beta_t_OFUL(self.t, self.d, self.lam, self.delta_ts, self.S, self.R)
         else:

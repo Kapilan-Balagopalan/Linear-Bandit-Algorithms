@@ -8,12 +8,12 @@ class Oful(Bandit):
         self.S = S
         self.flags = flags
         if(self.flags["type"] == "EOPT"):
-            self.lam = (self.R**2)/self.S**2
+            self.lam = self.R**2/self.S**2
         elif(self.flags["type"] == "Sphere"):
             self.lam = self.R**2/self.S**2
         self.delta = .01
         self.multiplier = float(multiplier)
-
+        self.Noise_Mismatch = 5
         # more instance variables
         self.t = 1
         self.K, self.d = self.X.shape
@@ -32,7 +32,7 @@ class Oful(Bandit):
         self.Vt = self.lam * np.eye(self.d)
 
         if (self.flags["type"] == "EOPT") :
-            self.beta_t = calc_beta_t_LinIMED(self.t, self.d, self.lam, self.delta, self.S, self.R)
+            self.beta_t = self.Noise_Mismatch*calc_beta_t_OFUL(self.t, self.d, self.lam, self.delta, self.S, self.R)
         elif(self.flags["type"] == "Sphere") :
             self.beta_t = calc_beta_t_OFUL(self.t, self.d, self.lam, self.delta, self.S, self.R)
         else:
@@ -75,7 +75,7 @@ class Oful(Bandit):
         self.theta_hat = np.dot(self.invVt, self.XTy)
 
         if (self.flags["type"] == "EOPT") :
-            self.beta_t = calc_beta_t_LinIMED(self.t, self.d, self.lam, self.delta, self.S, self.R)
+            self.beta_t = self.Noise_Mismatch*calc_beta_t_OFUL(self.t, self.d, self.lam, self.delta, self.S, self.R)
         elif(self.flags["type"] == "Sphere") :
             self.beta_t = calc_beta_t_OFUL(self.t, self.d, self.lam, self.delta, self.S, self.R)
         else:

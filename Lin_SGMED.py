@@ -4,29 +4,28 @@ from Bandit_Env import *
 
 
 
-#all the scalar values will start with sVal
-#all the vector values will start with vVal
-#all the matrix values will start with mVal
-#underscore will be used to divide words
-#meaning full names will not have vowels in it e.g leverage = 'lvrg'
 class Lin_SGMED(Bandit):
     ########################################
-    def __init__(self, X, R, S, opt_coeff,emp_coeff, flags):
+    def __init__(self, X, R, S,N ,opt_coeff,emp_coeff, flags):
         self.X = X
         self.R = R
+        self.N = N
         self.S = S
+        self.Noise_Mismatch = 1
+        self.Norm_Mismatch = 1
+        self.S = S*self.Norm_Mismatch
+        self.delta = .01
         self.flags = flags
         self.K, self.d = self.X.shape
         if(self.flags["type"] == "EOPT"):
-            self.lam = (self.d)*(self.R**2)/self.S**2
+            self.lam = self.d*self.R**2/self.S**2
         elif(self.flags["type"] == "Sphere"):
-            self.lam = (self.d*(self.R**2))/self.S**2
+            self.lam = self.d*self.R**2/self.S**2
         self.delta = .01
 
         # more instance variables
         self.t = 1
         
-
 
         self.XTy = np.zeros(self.d)
         self.invVt = np.eye(self.d) / self.lam
@@ -42,9 +41,17 @@ class Lin_SGMED(Bandit):
 
         self.Delta_empirical_gap = np.ones(self.K)
         self.empirical_best_arm = 0
-        self.gamma_t = calc_gamma_t_SGMED(self.t,self.d,self.lam,self.delta,self.S,self.R)
+        if(self.flags["type"] == "EOPT"):
+             self.gamma_t = self.Noise_Mismatch*calc_gamma_t_SGMED(self.t ,self.d,self.lam,self.delta,self.S,self.R)
+        elif(self.flags["type"] == "Sphere"):
+             self.gamma_t = calc_beta_t_OFUL(self.t,self.d,self.lam,self.delta,self.S,self.R)
+       
 
     def next_arm(self):
+
+        #if(self.flags["type"] == "EOPT"):
+           # self.lam = (self.d*np.log(12) + np.log(2*self.t) - np.log(self.delta))
+        
         #valid_idx = np.setdiff1d(np.arange(self.K), self.do_not_ask)
         prob_dist = calc_q_opt_design(self.AugX)
         if (self.t == 1):
@@ -109,7 +116,10 @@ class Lin_SGMED(Bandit):
 
         theta_hat = np.matmul(self.invVt, self.XTy.T)
  
-        self.gamma_t = calc_gamma_t_SGMED(self.t,self.d,self.lam,self.delta,self.S,self.R)
+        if(self.flags["type"] == "EOPT"):
+             self.gamma_t = self.Noise_Mismatch*calc_gamma_t_SGMED(self.t,self.d,self.lam,self.delta,self.S,self.R)
+        elif(self.flags["type"] == "Sphere"):
+             self.gamma_t = calc_beta_t_OFUL(self.t,self.d,self.lam,self.delta,self.S,self.R)
 
         self.estimate_empirical_reward_gap(self.X, theta_hat)
         if(self.flags["version"] == 1):
