@@ -21,7 +21,7 @@ class Lin_SGMED_NOPT(Bandit):
         self.K, self.d = self.X.shape
         self.c_gamma = c_gamma
         if(self.flags["type"] == "EOPT"):
-            self.lam = self.R**2/self.S**2 #60*(self.d*np.log(12) + np.log(2*self.N) - np.log(self.delta))
+            self.lam = self.R**2/self.S**2
         elif(self.flags["type"] == "Sphere"):
             self.lam = self.R**2/self.S**2
         self.delta = .01
