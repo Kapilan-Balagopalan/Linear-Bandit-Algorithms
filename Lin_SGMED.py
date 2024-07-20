@@ -11,9 +11,6 @@ class Lin_SGMED(Bandit):
         self.R = R
         self.N = N
         self.S = S
-        self.Noise_Mismatch = 1
-        self.Norm_Mismatch = 1
-        self.S = S*self.Norm_Mismatch
         self.delta = .01
         self.flags = flags
         self.K, self.d = self.X.shape
@@ -42,7 +39,7 @@ class Lin_SGMED(Bandit):
         self.Delta_empirical_gap = np.ones(self.K)
         self.empirical_best_arm = 0
         if(self.flags["type"] == "EOPT"):
-             self.gamma_t = self.Noise_Mismatch*calc_gamma_t_SGMED(self.t ,self.d,self.lam,self.delta,self.S,self.R)
+             self.gamma_t = calc_gamma_t_SGMED(self.t ,self.d,self.lam,self.delta,self.S,self.R)
         elif(self.flags["type"] == "Sphere"):
              self.gamma_t = calc_beta_t_OFUL(self.t,self.d,self.lam,self.delta,self.S,self.R)
        
@@ -117,7 +114,7 @@ class Lin_SGMED(Bandit):
         theta_hat = np.matmul(self.invVt, self.XTy.T)
  
         if(self.flags["type"] == "EOPT"):
-             self.gamma_t = self.Noise_Mismatch*calc_gamma_t_SGMED(self.t,self.d,self.lam,self.delta,self.S,self.R)
+             self.gamma_t = calc_gamma_t_SGMED(self.t,self.d,self.lam,self.delta,self.S,self.R)
         elif(self.flags["type"] == "Sphere"):
              self.gamma_t = calc_beta_t_OFUL(self.t,self.d,self.lam,self.delta,self.S,self.R)
 
