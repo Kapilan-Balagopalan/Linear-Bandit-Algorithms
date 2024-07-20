@@ -34,12 +34,13 @@ class Lin_IMED(Bandit):
         self.theta_hat = np.zeros(self.d)
         self.Vt = self.lam * np.eye(self.d)
 
-        
+        #calc_sqrt_beta_det2(d,t,R,ridge,delta,S,logdetV)
 
         if(self.flags["type"] == "EOPT"):
-            self.beta_t = calc_beta_t_OFUL(self.t,self.d,self.lam,self.delta,self.S,self.R)
+            self.beta_t = calc_sqrt_beta_det2_initial( self.R, self.lam, self.delta, self.S)
+            #self.beta_t = calc_beta_t_OFUL(self.t,self.d,self.lam,self.delta,self.S,self.R)
         elif(self.flags["type"] == "Sphere"):
-            self.beta_t = calc_beta_t_OFUL(self.t,self.d,self.lam,self.delta,self.S,self.R)
+            self.beta_t = calc_sqrt_beta_det2_initial(self.R, self.lam, self.delta, self.S)
 
         self.MED_quo = np.ones(self.K)
         self.empirical_best_quo = 0.5
@@ -53,6 +54,8 @@ class Lin_IMED(Bandit):
         self.best_ucb_arm = 0
         self.worst_ucb_arm = 0
         self.C = 30
+
+        self.logdetV = self.d * np.log(self.lam)
 
     def next_arm(self):
         #valid_idx = np.setdiff1d(np.arange(self.K), self.do_not_ask)
@@ -100,15 +103,19 @@ class Lin_IMED(Bandit):
         self.XTy = self.XTy +  y_t * xt
         self.Vt =  self.Vt + np.outer(xt, xt)
 
+        tempval1 = np.dot(self.invVt, xt)  # d by 1, O(d^2)
+        tempval2 = np.dot(tempval1, xt)  # scalar, O(d)
+        self.logdetV += np.log(1 + tempval2)
+
         self.invVt = np.linalg.inv(self.Vt )
         #self.invVt = find_matrix_inverse_vt_method_fast(self.invVt, xt)
 
         theta_hat = np.matmul(self.invVt, self.XTy.T)
 
         if(self.flags["type"] == "EOPT"):
-            self.beta_t = calc_beta_t_OFUL(self.t,self.d,self.lam,self.delta,self.S,self.R)
+            self.beta_t = calc_sqrt_beta_det2(self.d,self.R, self.lam, self.delta, self.S,self.logdetV)
         elif(self.flags["type"] == "Sphere"):
-            self.beta_t = calc_beta_t_OFUL(self.t,self.d,self.lam,self.delta,self.S,self.R)
+            self.beta_t = calc_sqrt_beta_det2(self.d,self.R, self.lam, self.delta, self.S,self.logdetV)
         
         
 

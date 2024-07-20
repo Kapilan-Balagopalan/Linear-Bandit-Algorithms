@@ -20,8 +20,11 @@ def sample_action(A,MED_prob_dist):
 def calc_eta_t_EXP2(t,d,K):
         return np.sqrt(np.log(K)/(3*d*t))
 
-def calc_sqrt_beta_det2(d,t,R,ridge,delta,S,logdetV):
-  return R * np.sqrt( logdetV - d*np.log(ridge) + np.log (1/(delta**2)) ) + np.sqrt(ridge) * S
+def calc_sqrt_beta_det2(d,R,ridge,delta,S,logdetV):
+  return (R * np.sqrt( logdetV - d*np.log(ridge) + np.log (1/(delta**2)) ) + np.sqrt(ridge) * S)**2
+
+def calc_sqrt_beta_det2_initial(R,ridge,delta,S):
+  return (R * np.sqrt(np.log (1/(delta**2)) ) + np.sqrt(ridge) * S)**2
 
 def find_matrix_inverse_vt_method_conventional(Vt):
     invVt = np.linalg.inv(Vt)

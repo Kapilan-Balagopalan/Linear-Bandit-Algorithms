@@ -21,14 +21,13 @@ class Oful(Bandit):
         self.invVt = np.eye(self.d) / self.lam
         self.X_invVt_norm_sq = np.sum(self.X * self.X, axis=1) / self.lam
         self.logdetV = self.d*np.log(self.lam)
-        self.sqrt_beta = calc_sqrt_beta_det2(self.d,self.t,self.R,self.lam,self.delta,self.S,self.logdetV)
         self.theta_hat = np.zeros(self.d)
         self.Vt = self.lam * np.eye(self.d)
 
         if (self.flags["type"] == "EOPT") :
-            self.beta_t = calc_beta_t_OFUL(self.t, self.d, self.lam, self.delta, self.S, self.R)
+            self.beta_t = calc_sqrt_beta_det2_initial( self.R, self.lam, self.delta, self.S)
         elif(self.flags["type"] == "Sphere") :
-            self.beta_t = calc_beta_t_OFUL(self.t, self.d, self.lam, self.delta, self.S, self.R)
+            self.beta_t = calc_sqrt_beta_det2_initial( self.R, self.lam, self.delta, self.S)
         else:
              raise NotImplementedError() # todo: use valid_idx
 
@@ -57,6 +56,10 @@ class Oful(Bandit):
         self.XTy += (y_t) * xt
         self.Vt += np.outer(xt,xt)
 
+        tempval1 = np.dot(self.invVt, xt)  # d by 1, O(d^2)
+        tempval2 = np.dot(tempval1, xt)  # scalar, O(d)
+        self.logdetV += np.log(1 + tempval2)
+
         self.invVt = find_matrix_inverse_vt_method_fast(self.invVt, xt)
 
         #self.invVt  = find_matrix_inverse_vt_method_conventional(self.Vt)
@@ -67,9 +70,9 @@ class Oful(Bandit):
         self.theta_hat = np.dot(self.invVt, self.XTy)
 
         if (self.flags["type"] == "EOPT") :
-            self.beta_t = calc_beta_t_OFUL(self.t, self.d, self.lam, self.delta, self.S, self.R)
+            self.beta_t = calc_sqrt_beta_det2(self.d,self.R, self.lam, self.delta, self.S,self.logdetV)
         elif(self.flags["type"] == "Sphere") :
-            self.beta_t = calc_beta_t_OFUL(self.t, self.d, self.lam, self.delta, self.S, self.R)
+            self.beta_t = calc_sqrt_beta_det2(self.d,self.R, self.lam, self.delta, self.S,self.logdetV)
         else:
              raise NotImplementedError() # todo: use valid_idx
     

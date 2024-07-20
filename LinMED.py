@@ -44,10 +44,11 @@ class Lin_SGMED(Bandit):
         self.Delta_empirical_gap = np.ones(self.K)
         self.empirical_best_arm = 0
         if(self.flags["type"] == "EOPT"):
-             self.gamma_t = calc_gamma_t_SGMED(self.t ,self.d,self.lam,self.delta,self.S,self.R)
+             self.gamma_t = calc_sqrt_beta_det2_initial( self.R, self.lam, self.delta, self.S)
         elif(self.flags["type"] == "Sphere"):
-             self.gamma_t = calc_beta_t_OFUL(self.t,self.d,self.lam,self.delta,self.S,self.R)
-       
+             self.gamma_t = calc_sqrt_beta_det2_initial( self.R, self.lam, self.delta, self.S)
+
+        self.logdetV = self.d * np.log(self.lam)
 
     def next_arm(self):
 
@@ -112,16 +113,21 @@ class Lin_SGMED(Bandit):
 
         self.XTy = self.XTy +  y_t * xt
         self.Vt =  self.Vt + np.outer(xt, xt)
-      
+
+        tempval1 = np.dot(self.invVt, xt)  # d by 1, O(d^2)
+        tempval2 = np.dot(tempval1, xt)  # scalar, O(d)
+        self.logdetV += np.log(1 + tempval2)
+
         self.invVt = np.linalg.inv(self.Vt )
         #self.invVt = find_matrix_inverse_vt_method_fast(self.invVt, xt)
+
 
         theta_hat = np.matmul(self.invVt, self.XTy.T)
  
         if(self.flags["type"] == "EOPT"):
-             self.gamma_t = calc_gamma_t_SGMED(self.t,self.d,self.lam,self.delta,self.S,self.R)
+             self.gamma_t = calc_sqrt_beta_det2(self.d,self.R, self.lam, self.delta, self.S,self.logdetV)
         elif(self.flags["type"] == "Sphere"):
-             self.gamma_t = calc_beta_t_OFUL(self.t,self.d,self.lam,self.delta,self.S,self.R)
+             self.gamma_t = calc_sqrt_beta_det2(self.d,self.R, self.lam, self.delta, self.S,self.logdetV)
 
         self.estimate_empirical_reward_gap(self.X, theta_hat)
         if(self.flags["version"] == 1):

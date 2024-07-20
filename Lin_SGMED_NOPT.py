@@ -11,7 +11,7 @@ from Bandit_Env import *
 #meaning full names will not have vowels in it e.g leverage = 'lvrg'
 class Lin_SGMED_NOPT(Bandit):
     ########################################
-    def __init__(self, X, R, S,N ,opt_coeff,emp_coeff, c_gamma,flags):
+    def __init__(self, X, R, S,N ,opt_coeff,emp_coeff,flags):
         self.X = X
         self.R = R
         self.S = S
@@ -19,7 +19,6 @@ class Lin_SGMED_NOPT(Bandit):
         self.delta = .01
         self.flags = flags
         self.K, self.d = self.X.shape
-        self.c_gamma = c_gamma
         if(self.flags["type"] == "EOPT"):
             self.lam = self.R**2/self.S**2
         elif(self.flags["type"] == "Sphere"):
@@ -45,7 +44,9 @@ class Lin_SGMED_NOPT(Bandit):
 
         self.Delta_empirical_gap = np.ones(self.K)
         self.empirical_best_arm = 0
-        self.gamma_t = self.c_gamma*calc_beta_t_OFUL(self.t,self.d,self.lam,self.delta,self.S,self.R)
+        self.gamma_t = calc_sqrt_beta_det2_initial( self.R, self.lam, self.delta, self.S)
+
+        self.logdetV = self.d * np.log(self.lam)
 
     def next_arm(self):
         #valid_idx = np.setdiff1d(np.arange(self.K), self.do_not_ask)
@@ -101,13 +102,17 @@ class Lin_SGMED_NOPT(Bandit):
 
         self.XTy = self.XTy +  y_t * xt
         self.Vt =  self.Vt + np.outer(xt, xt)
+
+        tempval1 = np.dot(self.invVt, xt)  # d by 1, O(d^2)
+        tempval2 = np.dot(tempval1, xt)  # scalar, O(d)
+        self.logdetV += np.log(1 + tempval2)
       
         self.invVt = np.linalg.inv(self.Vt )
         #self.invVt = find_matrix_inverse_vt_method_fast(self.invVt, xt)
 
         theta_hat = np.matmul(self.invVt, self.XTy.T)
  
-        self.gamma_t = self.c_gamma*calc_beta_t_OFUL(self.t,self.d,self.lam,self.delta,self.S,self.R)
+        self.gamma_t =  calc_sqrt_beta_det2(self.d,self.R, self.lam, self.delta, self.S,self.logdetV)
 
         self.estimate_empirical_reward_gap(self.X, theta_hat)
         if(self.flags["version"] == 1):
