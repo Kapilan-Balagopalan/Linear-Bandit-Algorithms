@@ -79,7 +79,7 @@ class Lin_TS_FREQ(Bandit):
         self.XTy += (y_t) * xt
         self.Vt += np.outer(xt,xt)
 
-        tempval1 = np.dot(self.invVt, xt)  # d by 1, O(d^2)
+        tempval1 = np.matmul(self.invVt, xt.T)  # d by 1, O(d^2)
         tempval2 = np.dot(tempval1, xt)  # scalar, O(d)
         self.logdetV += np.log(1 + tempval2)
 
