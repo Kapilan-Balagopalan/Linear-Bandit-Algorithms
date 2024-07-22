@@ -65,8 +65,9 @@ n_trials = 30
 
 emp_coeff = [0.99,0.9,0.5]
 opt_coeff = [0.005,0.05,0.25]
-c_gamma = 0.5
 
+
+n_mc_samples = 0
 cum_regret_arr=  np.zeros((n_trials,n,n_algo))
 
 test_type = "Sphere"
@@ -82,9 +83,9 @@ for j in tqdm(range(n_trials)):
     i = 0
     for name in algo_names:
         if(i < 7):
-            algo_list[i] = bandit_factory(test_type,name,X,R_true*Noise_Mismatch,S_true*Norm_Mismatch ,n,opt_coeff[0],emp_coeff[0])
+            algo_list[i] = bandit_factory(test_type,name,X,R_true*Noise_Mismatch,S_true*Norm_Mismatch ,n,opt_coeff[0],emp_coeff[0],n_mc_samples)
         else :
-            algo_list[i] = bandit_factory(test_type,name,X,R_true*Noise_Mismatch,S_true*Norm_Mismatch,n,opt_coeff[i-7],emp_coeff[i-7])
+            algo_list[i] = bandit_factory(test_type,name,X,R_true*Noise_Mismatch,S_true*Norm_Mismatch,n,opt_coeff[i-7],emp_coeff[i-7],n_mc_samples)
         i = i+1
 
     cum_regret = 0
@@ -129,12 +130,12 @@ with open(file_name, 'wb') as f:
 
 
 
-n_algo = 10
+#n_algo = 7
 
-algo_list = [None]*n_algo
-algo_names = ['SpannerIGW', 'OFUL' ,'Lin-IMED-1' ,'Lin-IMED-3',
- 'SpannerIGW-Anytime', 'EXP2' ,'Lin-TS-Freq',r'$\text{LinMED}(\alpha_{\text{emp}} = 0.99)$',
- r'$\text{LinMED}(\alpha_{\text{emp}} = 0.90)$', r'$\text{LinMED}(\alpha_{\text{emp}} = 0.50)$']
+#algo_list = [None]*n_algo
+#algo_names = ['SpannerIGW', 'OFUL' ,'Lin-IMED-1' ,'Lin-IMED-3',
+# 'SpannerIGW-Anytime', 'EXP2' ,'Lin-TS-Freq',r'$\text{LinMED}(\alpha_{\text{emp}} = 0.99)$',
+# r'$\text{LinMED}(\alpha_{\text{emp}} = 0.90)$', r'$\text{LinMED}(\alpha_{\text{emp}} = 0.50)$']
 
 algo_color = ['black',"red","lime", "darkgreen","gray","yellow", "saddlebrown", "magenta","darkmagenta","darkviolet","dodgerblue","blue","midnightblue"]
 

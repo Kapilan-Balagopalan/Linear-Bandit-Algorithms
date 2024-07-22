@@ -91,5 +91,8 @@ class Bandit(object):
     def update(self):
         raise NotImplementedError()
 
+    def get_probability_arm(self):
+        raise NotImplementedError()
+
     def get_debug_dict(self):
         raise NotImplementedError()

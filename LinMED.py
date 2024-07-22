@@ -23,7 +23,6 @@ class Lin_SGMED(Bandit):
             self.lam = self.R**2/self.S**2
         elif(self.flags["type"] == "Sphere"):
             self.lam = self.R**2/self.S**2
-        self.delta = .01
 
         # more instance variables
         self.t = 1
@@ -50,17 +49,16 @@ class Lin_SGMED(Bandit):
 
         self.logdetV = self.d * np.log(self.lam)
 
+        self.prob_chosen = 0
+
     def next_arm(self):
 
-        #if(self.flags["type"] == "EOPT"):
-           # self.lam = (self.d*np.log(12) + np.log(2*self.t) - np.log(self.delta))
-        
-        #valid_idx = np.setdiff1d(np.arange(self.K), self.do_not_ask)
         prob_dist = calc_q_opt_design(self.AugX)
         if (self.t == 1):
             MED_prob_dist = (prob_dist / np.sum(prob_dist))*self.opt_design_quo + (1-self.opt_design_quo)*self.All_arm / self.K
 
             Arm_t, chosen = sample_action(self.X, MED_prob_dist)
+            self.prob_chosen = MED_prob_dist[chosen][0]
             return chosen
         
         qt =  self.opt_design_quo * prob_dist + (self.each_arm_coeff)*self.All_arm
@@ -73,7 +71,7 @@ class Lin_SGMED(Bandit):
             # print(np.sum(MED_prob_dist))
             # print(MED_prob_dist.shape)
         Arm_t, chosen = sample_action(self.X, MED_prob_dist)
-
+        self.prob_chosen = MED_prob_dist[chosen][0]
         return chosen
 
     def estimate_empirical_reward_gap(self,X,theta_hat):
@@ -82,20 +80,20 @@ class Lin_SGMED(Bandit):
         self.Delta_empirical_gap = np.max(reward_A) - reward_A
 
     def calc_MED_ver1_probability_distribution(self):
-        a = self.X[self.empirical_best_arm][:]
+        a = self.X[self.empirical_best_arm,:]
         vVal_lev_score_emp_best = np.matmul(np.matmul(a, self.invVt), a.T)
         # print(vVal_lev_score_emp_best)
         # print(a.shape)
         for i in range(self.K):
-            a = self.X[i][:]
+            a = self.X[i,:]
             vVal_lev_score_a = np.matmul(np.matmul(a, self.invVt), a.T)
             self.MED_quo[i][0] = np.exp(
                 -(self.Delta_empirical_gap[i][0]) ** 2 / ((self.gamma_t) * (vVal_lev_score_a + vVal_lev_score_emp_best)))
 
     def calc_MED_ver2_probability_distribution(self):
-        a_hat = self.X[self.empirical_best_arm][:]
+        a_hat = self.X[self.empirical_best_arm,:]
         for i in range(self.K):
-            a = self.X[i][:]
+            a = self.X[i,:]
             vVal_lev_score_a = np.matmul(np.matmul((a-a_hat), self.invVt), (a-a_hat).T)
             if(vVal_lev_score_a != 0):
                 self.MED_quo[i][0] = np.exp(
@@ -105,7 +103,10 @@ class Lin_SGMED(Bandit):
 
     def scale_arms(self):
         for i in range(self.K):
-            self.AugX[i][:] = np.sqrt(self.MED_quo[i][0]) * self.X[i][:]
+            self.AugX[i,:] = np.sqrt(self.MED_quo[i][0]) * self.X[i,:]
+
+    def get_probability_arm(self):
+        return self.prob_chosen
 
     def update(self, pulled_idx, y_t):
 

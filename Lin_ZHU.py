@@ -92,7 +92,7 @@ class Lin_ZHU(Bandit):
 
     def scale_arms(self):
         for i in range(self.K):
-            self.AugX[i][:] = self.X[i][:]/(np.sqrt(1 + self.eta*self.Delta_empirical_gap[i][0]))
+            self.AugX[i,:] = self.X[i,:]/(np.sqrt(1 + self.eta*self.Delta_empirical_gap[i][0]))
 
     def update(self, pulled_idx, y_t):
 

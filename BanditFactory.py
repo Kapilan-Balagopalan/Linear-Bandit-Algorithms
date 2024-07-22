@@ -1,4 +1,4 @@
-from Lin_SGMED import *
+#from Lin_SGMED import *
 from Lin_IMED import *
 from Lin_ZHU import *
 from OFUL import *
@@ -8,7 +8,7 @@ from Lin_TS_Freq import *
 from Lin_SGMED_NOPT import *
 from LinMED import *
 
-def bandit_factory(test_type,name, X, R, S,n,opt_coeff,emp_coeff):
+def bandit_factory(test_type,name, X, R, S,n,opt_coeff,emp_coeff,n_mc_samples):
     K, d = X.shape
     opt_gen = {
         'X': X,
@@ -24,7 +24,7 @@ def bandit_factory(test_type,name, X, R, S,n,opt_coeff,emp_coeff):
         algo = Oful(**opt_oful)
         return algo
     if (name == "Lin-TS-Freq"):
-        opt_ts = {}
+        opt_ts = {'n_mc_samples':n_mc_samples}
         opt_ts.update(opt_gen)
         opt_ts['flags'] = {"version": None, "type": test_type}
         algo = Lin_TS_FREQ(**opt_ts)

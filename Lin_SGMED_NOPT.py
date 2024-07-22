@@ -71,20 +71,20 @@ class Lin_SGMED_NOPT(Bandit):
         self.Delta_empirical_gap = np.max(reward_A) - reward_A
 
     def calc_MED_ver1_probability_distribution(self):
-        a = self.X[self.empirical_best_arm][:]
+        a = self.X[self.empirical_best_arm,:]
         vVal_lev_score_emp_best = np.matmul(np.matmul(a, self.invVt), a.T)
         # print(vVal_lev_score_emp_best)
         # print(a.shape)
         for i in range(self.K):
-            a = self.X[i][:]
+            a = self.X[i,:]
             vVal_lev_score_a = np.matmul(np.matmul(a.T, self.invVt), a)
             self.MED_quo[i][0] = np.exp(
                 -(self.Delta_empirical_gap[i][0]) ** 2 / ((self.gamma_t) * (vVal_lev_score_a + vVal_lev_score_emp_best)))
 
     def calc_MED_ver2_probability_distribution(self):
-        a_hat = self.X[self.empirical_best_arm][:]
+        a_hat = self.X[self.empirical_best_arm,:]
         for i in range(self.K):
-            a = self.X[i][:]
+            a = self.X[i,:]
             vVal_lev_score_a = np.matmul(np.matmul((a-a_hat), self.invVt), (a-a_hat).T)
             if(vVal_lev_score_a != 0):
                 self.MED_quo[i][0] = np.exp(
@@ -94,11 +94,11 @@ class Lin_SGMED_NOPT(Bandit):
 
     def scale_arms(self):
         for i in range(self.K):
-            self.AugX[i][:] = np.sqrt(self.MED_quo[i][0]) * self.X[i][:]
+            self.AugX[i,:] = np.sqrt(self.MED_quo[i][0]) * self.X[i,:]
 
     def update(self, pulled_idx, y_t):
 
-        xt = self.X[pulled_idx][:]
+        xt = self.X[pulled_idx,:]
 
         self.XTy = self.XTy +  y_t * xt
         self.Vt =  self.Vt + np.outer(xt, xt)

@@ -11,7 +11,7 @@ from scipy import linalg
 #meaning full names will not have vowels in it e.g leverage = 'lvrg'
 class Lin_TS_FREQ(Bandit):
     ########################################
-    def __init__(self, X, R, S, N, flags):
+    def __init__(self, X, R, S, N, flags,n_mc_samples):
         self.X = X
         self.R = R
         self.S = S
@@ -48,8 +48,9 @@ class Lin_TS_FREQ(Bandit):
 
         self.logdetV = self.d * np.log(self.lam)
         #print("original shape is",self.theta_est.shape)
-
-    
+        self.prob_chosen = 0
+        self.arm_chosen = 0
+        self.n_mc_samples = n_mc_samples
 
     def next_arm(self):
 
@@ -69,9 +70,30 @@ class Lin_TS_FREQ(Bandit):
             #print(np.dot(self.X[i], theta_tilde.T))
 
         chosen = np.argmax(obj_func)
-
+        self.arm_chosen = chosen
         return chosen
-    
+
+    def get_probability_arm(self):
+        if (self.t == 1):
+            return 1/self.K
+        prob_list = np.zeros((self.K,1))
+        for i in range(self.n_mc_samples):
+            eta_t = np.random.multivariate_normal(self.multi_var_mean.ravel(), self.multi_var_var, 1)
+            # print(eta_t.shape)
+            temp = np.matmul(self.invVt_sqrt, eta_t.T)
+            # print(temp.shape)
+            theta_tilde = self.theta_hat + self.oversample_coeff * self.beta_t * temp
+            # obj_func = np.dot(self.X, self.theta_hat) + np.sqrt(radius_sq) * np.sqrt(self.X_invVt_norm_sq)
+            obj_func = np.zeros((self.K, 1))
+            for i in range(self.K):
+                obj_func[i][0] = np.matmul(self.X[i], theta_tilde)
+                # print(np.dot(self.X[i], theta_tilde.T))
+
+            chosen = np.argmax(obj_func)
+            prob_list[chosen][0] = prob_list[chosen][0] + 1
+
+        return prob_list[self.arm_chosen]/self.n_mc_samples
+
 
     def update(self, pulled_idx, y_t):
 

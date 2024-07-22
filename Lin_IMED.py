@@ -72,7 +72,7 @@ class Lin_IMED(Bandit):
     def estimate_empirical_reward_gap_ver3(self,X,theta_hat):
         UCB_arr =  np.zeros((self.K,1))
         for i in range(self.K):
-            a = self.X[i][:]
+            a = self.X[i,:]
             vVal_lev_score_a = np.matmul(np.matmul(a, self.invVt), a.T)
             UCB_arr[i][0] = np.sqrt(((self.beta_t)*vVal_lev_score_a))
         reward_A = np.matmul(X, theta_hat)
