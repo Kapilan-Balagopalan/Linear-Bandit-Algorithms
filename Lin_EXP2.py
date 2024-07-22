@@ -4,11 +4,6 @@ from Bandit_Env import *
 
 
 
-#all the scalar values will start with sVal
-#all the vector values will start with vVal
-#all the matrix values will start with mVal
-#underscore will be used to divide words
-#meaning full names will not have vowels in it e.g leverage = 'lvrg'
 class Lin_EXP2(Bandit):
     ########################################
     def __init__(self, X, R, S, N, flags):
@@ -23,11 +18,11 @@ class Lin_EXP2(Bandit):
         # more instance variables
         self.t = 1
  
-        self.theta_est = np.zeros(self.d)
-        
+        self.theta_est = np.zeros((self.d,1))
+        #print(self.theta_est.shape)
         self.AugX = self.X.copy()
 
-        self.EXP2_prob_dist = np.ones(self.K)/self.K
+        self.EXP2_prob_dist = np.ones((self.K,1))/self.K
 
         self.gamma_t = 1 
 
@@ -35,8 +30,8 @@ class Lin_EXP2(Bandit):
 
         self.eta_t = 1
 
-
-        self.XTy = np.zeros(self.d)
+        #print(self.prob_dist_opt.shape)
+        self.XTy = np.zeros((self.d,1))
         
         
         #print("original shape is",self.theta_est.shape)
@@ -50,8 +45,10 @@ class Lin_EXP2(Bandit):
 
             Arm_t, chosen = sample_action(self.X, self.EXP2_prob_dist)
             return chosen
-        
-        exploit_part =  np.matmul(self.X, self.theta_est) 
+        #print(self.X.shape)
+        #print(self.theta_est.shape)
+        exploit_part =  np.matmul(self.X, self.theta_est)
+        #print(exploit_part.shape)
         self.eta_t = calc_eta_t_EXP2(self.t + 1,self.d,self.K)
         if(self.eta_t > 1/self.d):
             self.eta_t  = 1/self.d
@@ -59,7 +56,7 @@ class Lin_EXP2(Bandit):
 
         exploit_part = np.exp(exploit_part*self.eta_t)
         exploit_part = exploit_part/np.sum(exploit_part)
-        #print(exploit_part.shape)
+
         self.EXP2_prob_dist = (1-self.gamma_t)*exploit_part + self.gamma_t*self.prob_dist_opt
         #print(self.EXP2_prob_dist.shape)
         Arm_t, chosen = sample_action(self.X, self.EXP2_prob_dist)
@@ -75,7 +72,7 @@ class Lin_EXP2(Bandit):
 
         for i in range(self.K):
             aa_t = np.outer(self.X[i,:],self.X[i,:])
-            qt = qt + self.EXP2_prob_dist[i]*aa_t
+            qt = qt + self.EXP2_prob_dist[i][0]*aa_t
 
         #print(qt.shape, "The shape of Qt")
         
@@ -83,8 +80,8 @@ class Lin_EXP2(Bandit):
         q_t_inv = np.linalg.inv(qt )
 
         theta_est_inst = np.matmul(q_t_inv,XTy.T)
+        #print(theta_est_inst.shape)
 
-
-        self.theta_est  = self.theta_est + theta_est_inst[:,0]
+        self.theta_est  = self.theta_est + theta_est_inst
 
         self.t = self.t +  1

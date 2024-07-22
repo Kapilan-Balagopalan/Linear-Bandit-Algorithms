@@ -24,7 +24,7 @@ from tqdm import tqdm
 
 def init(seed,K,n,d):
     np.random.seed(seed)
-    noise_sigma = 0.1
+    noise_sigma = 1
     delta = 0.01
     S_true = 1
     sVal_dimension = d
@@ -54,10 +54,10 @@ d = 2
 
 
 
-n_algo = 10
+n_algo = 7
 
 algo_list = [None]*n_algo
-algo_names = ["LinZHU","OFUL","Lin-IMED-1","Lin-IMED-3","LinZHU-AT","EXP2", "Lin-TS-Freq", "LinMED","LinMED","LinMED"]
+algo_names = ["EXP2","Lin-IMED-3","Lin-TS-Freq","LinMED", "LinZHU","OFUL","Lin-SGMED-NOPT"]
 #algo_names = ["OFUL", "Lin-TS-Freq"]
 n_trials = 30
 
@@ -114,6 +114,9 @@ cum_confidence_down = cum_regret_mean - (t_alpha * cum_regret_mean_std)/np.sqrt(
 name_common = "d="+ str(d) + "K=" + str(K)
 now = datetime.now() # current date and time
 date_time = now.strftime("%m%d%Y%H%M%S")
+
+
+prefix = r"C:\Users\Kapilan\OneDrive - University of Arizona\Academia_Kapilan\Research\Source_code\Lin-SGMED\Lin-SGMED\logs"
 
 script_name = os.path.basename(__file__)
 file_name = os.path.splitext(script_name)[0] +name_common +  date_time + '.npy'

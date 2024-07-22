@@ -29,15 +29,14 @@ class Lin_TS_FREQ(Bandit):
         # more instance variables
         self.t = 1
 
-        self.multi_var_mean = np.zeros(self.d)
+        self.multi_var_mean = np.zeros((self.d,1))
         self.multi_var_var = np.eye(self.d)
 
-        self.XTy = np.zeros(self.d)
+        self.XTy = np.zeros((1,self.d))
         self.invVt = np.eye(self.d) / self.lam
-        self.invVt_sqrt = np.eye(self.d) 
-        self.X_invVt_norm_sq = np.sum(self.X * self.X, axis=1) / self.lam
-        self.logdetV = self.d*np.log(self.lam)
-        self.theta_hat = np.zeros(self.d)
+        self.invVt_sqrt = np.eye(self.d) /np.sqrt(self.lam)
+
+        self.theta_hat = np.zeros((self.d,1))
         self.Vt = self.lam * np.eye(self.d)
 
         if (self.flags["type"] == "EOPT") :
@@ -58,13 +57,15 @@ class Lin_TS_FREQ(Bandit):
             return np.random.randint(self.K) 
         
 
-        eta_t = np.random.multivariate_normal(self.multi_var_mean , self.multi_var_var, 1)
+        eta_t = np.random.multivariate_normal(self.multi_var_mean.ravel() , self.multi_var_var, 1)
+        #print(eta_t.shape)
         temp = np.matmul(self.invVt_sqrt, eta_t.T)
-        theta_tilde = self.theta_hat + self.oversample_coeff*self.beta_t*temp[:,0]
+        #print(temp.shape)
+        theta_tilde = self.theta_hat + self.oversample_coeff*self.beta_t*temp
         #obj_func = np.dot(self.X, self.theta_hat) + np.sqrt(radius_sq) * np.sqrt(self.X_invVt_norm_sq)
-        obj_func = np.zeros(self.K)
+        obj_func = np.zeros((self.K,1))
         for i in range(self.K):
-            obj_func[i] = np.dot(self.X[i], theta_tilde.T)
+            obj_func[i][0] = np.matmul(self.X[i], theta_tilde)
             #print(np.dot(self.X[i], theta_tilde.T))
 
         chosen = np.argmax(obj_func)
@@ -80,7 +81,7 @@ class Lin_TS_FREQ(Bandit):
         self.Vt += np.outer(xt,xt)
 
         tempval1 = np.matmul(self.invVt, xt.T)  # d by 1, O(d^2)
-        tempval2 = np.dot(tempval1, xt)  # scalar, O(d)
+        tempval2 = np.matmul(xt,tempval1)  # scalar, O(d)
         self.logdetV += np.log(1 + tempval2)
 
         evalues, evectors = np.linalg.eig(self.Vt)
@@ -91,7 +92,7 @@ class Lin_TS_FREQ(Bandit):
         self.invVt_sqrt = evectors * np.sqrt(np.reciprocal(evalues)) @ np.linalg.inv(evectors)
         
         #self.invVt = np.linalg.inv(self.Vt)
-        self.theta_hat = np.dot(self.invVt, self.XTy)
+        self.theta_hat = np.matmul(self.invVt, self.XTy.T)
 
 
 

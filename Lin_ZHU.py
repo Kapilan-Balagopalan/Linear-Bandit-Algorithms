@@ -24,7 +24,7 @@ class Lin_ZHU(Bandit):
         self.t = 1
         self.K, self.d = self.X.shape
 
-        self.XTy = np.zeros(self.d)
+        self.XTy = np.zeros((1,self.d))
         self.invVt = np.eye(self.d) / self.lam
         self.Vt = self.lam * np.eye(self.d)
 
@@ -32,7 +32,7 @@ class Lin_ZHU(Bandit):
         self.opt_design_quo = 0.5
         self.AugX = self.X.copy()
         
-        self.Delta_empirical_gap = np.ones(self.K)
+        self.Delta_empirical_gap = np.ones((self.K,1))
         self.empirical_best_arm = 0
         if(self.flags["version"] == "anytime"):
             self.gamma = calc_gamma_LinZHU(self.t + 1,self.d,self.delta)
@@ -42,16 +42,16 @@ class Lin_ZHU(Bandit):
 
     def calc_ZHU_probability_distribution(self,qt,lam_true):
 
-        MED_quo = np.ones(self.K)
+        MED_quo = np.ones((self.K,1))
         for i in range(self.K):
-            MED_quo[i] = qt[i] /(lam_true + self.eta*self.Delta_empirical_gap[i])
+            MED_quo[i][0] = qt[i][0] /(lam_true + self.eta*self.Delta_empirical_gap[i][0])
     
         return MED_quo
 
     def find_lambda(self,x,qt):
         temp = 0
         for i in range(self.K):
-            temp = temp + qt[i] / (x+ self.eta * self.Delta_empirical_gap[i])
+            temp = temp + qt[i][0] / (x+ self.eta * self.Delta_empirical_gap[i][0])
         return temp - 1
 
     def next_arm(self):
@@ -63,7 +63,7 @@ class Lin_ZHU(Bandit):
             return chosen
         
         qt =  self.opt_design_quo * prob_dist
-        qt[self.empirical_best_arm] = qt[self.empirical_best_arm]  + self.empirical_best_quo
+        qt[self.empirical_best_arm][0] = qt[self.empirical_best_arm][0]  + self.empirical_best_quo
 
         if(self.flags["version"] == "anytime"):
             self.gamma = calc_gamma_LinZHU(self.t + 1 ,self.d,self.delta)
@@ -92,7 +92,7 @@ class Lin_ZHU(Bandit):
 
     def scale_arms(self):
         for i in range(self.K):
-            self.AugX[i, :] = self.X[i,:]/(np.sqrt(1 + self.eta*self.Delta_empirical_gap[i]))
+            self.AugX[i][:] = self.X[i][:]/(np.sqrt(1 + self.eta*self.Delta_empirical_gap[i][0]))
 
     def update(self, pulled_idx, y_t):
 
@@ -102,7 +102,7 @@ class Lin_ZHU(Bandit):
         self.Vt =  self.Vt + np.outer(xt, xt)
 
         tempval1 = np.matmul(self.invVt, xt.T)  # d by 1, O(d^2)
-        tempval2 = np.dot(tempval1, xt)  # scalar, O(d)
+        tempval2 = np.matmul(xt, tempval1)  # scalar, O(d)
         #self.invVt = np.linalg.inv(self.Vt )
         self.invVt = self.invVt - np.outer(tempval1, tempval1) / (1 + tempval2)
 

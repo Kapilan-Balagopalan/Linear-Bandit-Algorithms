@@ -14,7 +14,7 @@ def calc_eta_LinZHU(gamma,d):
 
 def sample_action(A,MED_prob_dist):
     K,d = A.shape
-    ind = np.random.choice(K, 1, p= MED_prob_dist)
+    ind = np.random.choice(K, 1, p= MED_prob_dist.ravel())
     return A[ind,:], ind
 
 def calc_eta_t_EXP2(t,d,K):

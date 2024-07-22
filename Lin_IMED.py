@@ -27,11 +27,11 @@ class Lin_IMED(Bandit):
         self.K, self.d = self.X.shape
 
 
-        self.XTy = np.zeros(self.d)
+        self.XTy = np.zeros((1,self.d))
         self.invVt = np.eye(self.d) / self.lam
        
 
-        self.theta_hat = np.zeros(self.d)
+        self.theta_hat = np.zeros((self.d,1))
         self.Vt = self.lam * np.eye(self.d)
 
         #calc_sqrt_beta_det2(d,t,R,ridge,delta,S,logdetV)
@@ -42,12 +42,12 @@ class Lin_IMED(Bandit):
         elif(self.flags["type"] == "Sphere"):
             self.beta_t = calc_sqrt_beta_det2_initial(self.R, self.lam, self.delta, self.S)
 
-        self.MED_quo = np.ones(self.K)
+        self.MED_quo = np.ones((self.K,1))
         self.empirical_best_quo = 0.5
         self.opt_design_quo = 0.5
         self.AugX = self.X.copy()
  
-        self.Delta_empirical_gap = np.ones(self.K)
+        self.Delta_empirical_gap = np.ones((self.K,1))
         self.empirical_best_arm = 0
 
 
@@ -62,6 +62,7 @@ class Lin_IMED(Bandit):
         if (self.t == 1):
             return np.random.randint(self.K) 
         chosen = np.argmin(self.MED_quo)
+        #print(chosen)
         return chosen
 
     def estimate_empirical_reward_gap_ver1(self,X,theta_hat):
@@ -69,11 +70,11 @@ class Lin_IMED(Bandit):
         self.Delta_empirical_gap = np.max(reward_A) - reward_A
 
     def estimate_empirical_reward_gap_ver3(self,X,theta_hat):
-        UCB_arr =  np.zeros(self.K)
+        UCB_arr =  np.zeros((self.K,1))
         for i in range(self.K):
-            a = self.X[i, :]
-            vVal_lev_score_a = np.matmul(np.matmul(a.T, self.invVt), a)
-            UCB_arr[i] = np.sqrt(((self.beta_t)*vVal_lev_score_a))
+            a = self.X[i][:]
+            vVal_lev_score_a = np.matmul(np.matmul(a, self.invVt), a.T)
+            UCB_arr[i][0] = np.sqrt(((self.beta_t)*vVal_lev_score_a))
         reward_A = np.matmul(X, theta_hat)
         ver3_metric = reward_A + UCB_arr
         self.Delta_empirical_gap = np.max(ver3_metric) - ver3_metric
@@ -104,7 +105,7 @@ class Lin_IMED(Bandit):
         self.Vt =  self.Vt + np.outer(xt, xt)
 
         tempval1 = np.matmul(self.invVt, xt.T)  # d by 1, O(d^2)
-        tempval2 = np.dot(tempval1, xt)  # scalar, O(d)
+        tempval2 = np.matmul(xt,tempval1)  # scalar, O(d)
         self.logdetV += np.log(1 + tempval2)
 
         #self.invVt = np.linalg.inv(self.Vt )

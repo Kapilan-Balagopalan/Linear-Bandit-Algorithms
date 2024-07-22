@@ -120,9 +120,9 @@ def optimal_design_algo(X):
 
 def optimal_probability(X, sVal_opt_design_arms):
     n,d = X.shape
-    prob_dist = np.zeros(n)
+    prob_dist = np.zeros((n,1))
     for i in range(n):
-        prob_dist[i] = np.count_nonzero(sVal_opt_design_arms == i)
+        prob_dist[i][0] = np.count_nonzero(sVal_opt_design_arms == i)
     prob_dist = prob_dist/len(sVal_opt_design_arms)
     return prob_dist
 

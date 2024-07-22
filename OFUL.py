@@ -17,11 +17,11 @@ class Oful(Bandit):
         self.K, self.d = self.X.shape
 
 
-        self.XTy = np.zeros(self.d)
+        self.XTy = np.zeros((1,self.d))
         self.invVt = np.eye(self.d) / self.lam
-        self.X_invVt_norm_sq = np.sum(self.X * self.X, axis=1) / self.lam
+
         self.logdetV = self.d*np.log(self.lam)
-        self.theta_hat = np.zeros(self.d)
+        self.theta_hat = np.zeros((self.d,1))
         self.Vt = self.lam * np.eye(self.d)
 
         if (self.flags["type"] == "EOPT") :
@@ -38,10 +38,10 @@ class Oful(Bandit):
 
         radius_sq = self.beta_t
         #obj_func = np.dot(self.X, self.theta_hat) + np.sqrt(radius_sq) * np.sqrt(self.X_invVt_norm_sq)
-        obj_func = np.zeros(self.K)
+        obj_func = np.zeros((self.K,1))
         for i in range(self.K):
-            obj_func[i] = np.dot(self.X[i], self.theta_hat) + np.sqrt(radius_sq) * np.sqrt(
-            np.matmul(np.matmul(self.X[i].T, self.invVt), self.X[i]))
+            obj_func[i][0] = np.matmul(self.X[i], self.theta_hat) + np.sqrt(radius_sq) * np.sqrt(
+            np.matmul(np.matmul(self.X[i], self.invVt), self.X[i].T))
         chosen = np.argmax(obj_func)
         return chosen
 
@@ -57,17 +57,19 @@ class Oful(Bandit):
         self.Vt += np.outer(xt,xt)
 
         tempval1 = np.matmul(self.invVt, xt.T)  # d by 1, O(d^2)
-        tempval2 = np.dot(tempval1, xt)  # scalar, O(d)
+        tempval2 = np.matmul(xt,tempval1)  # scalar, O(d)
         self.logdetV += np.log(1 + tempval2)
 
-        self.invVt = find_matrix_inverse_vt_method_fast(self.invVt, xt)
+        #self.invVt = find_matrix_inverse_vt_method_fast(self.invVt, xt)
 
+        # self.invVt = np.linalg.inv(self.Vt )
+        self.invVt = self.invVt - np.outer(tempval1, tempval1) / (1 + tempval2)
         #self.invVt  = find_matrix_inverse_vt_method_conventional(self.Vt)
 
         
 
         #self.invVt = np.linalg.inv(self.Vt)
-        self.theta_hat = np.dot(self.invVt, self.XTy)
+        self.theta_hat = np.matmul(self.invVt, self.XTy.T)
 
         if (self.flags["type"] == "EOPT") :
             self.beta_t = calc_sqrt_beta_det2(self.d,self.R, self.lam, self.delta, self.S,self.logdetV)
