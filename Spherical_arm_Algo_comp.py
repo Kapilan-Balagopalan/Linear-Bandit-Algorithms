@@ -43,8 +43,8 @@ def init(seed,K,n,d):
 
 
 
-K = 200
-n = 3000
+K = 20
+n = 100
 d = 2
 
 
@@ -54,7 +54,7 @@ n_algo = 7
 algo_list = [None]*n_algo
 algo_names = ["EXP2","Lin-IMED-3","Lin-TS-Freq","LinMED", "LinZHU","OFUL","Lin-SGMED-NOPT"]
 #algo_names = ["OFUL", "Lin-TS-Freq"]
-n_trials = 30
+n_trials = 5
 
 
 
@@ -110,12 +110,14 @@ now = datetime.now() # current date and time
 date_time = now.strftime("%m%d%Y%H%M%S")
 
 
-prefix = r"C:\Users\Kapilan\OneDrive - University of Arizona\Academia_Kapilan\Research\Source_code\Lin-SGMED\Lin-SGMED\logs"
+prefix = 'C:/Users/Kapilan/OneDrive - University of Arizona/Academia_Kapilan/Research/Source_code/Lin-SGMED/Lin-SGMED/logs/'
 
 script_name = os.path.basename(__file__)
 file_name = os.path.splitext(script_name)[0] +name_common +  date_time + '.npy'
 
-with open(file_name, 'wb') as f:
+completeName = os.path.join(prefix , file_name)
+
+with open(completeName, 'wb') as f:
 
     np.save(f, cum_regret_arr)
     np.save(f,algo_names)
@@ -147,10 +149,16 @@ for name in algo_names:
 
 name_eps = "IMG" +  "-d="+ str(d) + "-K=" + str(K) + "HT"+".eps"
 name_png = "IMG" +  "-d="+ str(d) + "-K=" + str(K)  + "HT" + ".png"
+
+completeName_eps = os.path.join(prefix , name_eps)
+completeName_png = os.path.join(prefix , name_png)
+
+
+
 plt.xlabel("Time")
 plt.ylabel("Regret")
 plt.title("Regret with time")
 plt.legend()
-plt.savefig(name_eps,format = 'eps',dpi=300)
-plt.savefig(name_png, format = 'png')
+plt.savefig(completeName_eps,format = 'eps',dpi=300)
+plt.savefig(completeName_png, format = 'png')
 plt.show() 

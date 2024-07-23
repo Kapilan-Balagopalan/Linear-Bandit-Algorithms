@@ -90,8 +90,13 @@ now = datetime.now() # current date and time
 date_time = now.strftime("%m%d%Y%H%M%S")
 
 script_name = os.path.basename(__file__)
+
 file_name = os.path.splitext(script_name)[0] +  date_time + '.npy'
-with open(file_name, 'wb') as f:
+
+prefix = 'C:/Users/Kapilan/OneDrive - University of Arizona/Academia_Kapilan/Research/Source_code/Lin-SGMED/Lin-SGMED/logs/'
+completeName = os.path.join(prefix , file_name)
+
+with open(completeName, 'wb') as f:
 
     np.save(f, cum_regret_arr)
     np.save(f,algo_names) 
@@ -122,8 +127,8 @@ plt.xlabel("Time")
 plt.ylabel("Regret")
 plt.title("Regret with time gamma= 1")
 plt.legend()
-plt.savefig('PDE11.eps',format = 'eps')
-plt.savefig('PDE11.png',format = 'png')
+plt.savefig(prefix + 'PDE11.eps',format = 'eps')
+plt.savefig(prefix + 'PDE11.png',format = 'png')
 plt.show() 
 
 
@@ -141,8 +146,8 @@ plt.xlabel("Time")
 plt.ylabel("Regret")
 plt.title("Regret with time gamma= 1")
 plt.legend()
-plt.savefig('PDE21.eps',format = 'eps')
-plt.savefig('PDE21.png',format = 'png')
+plt.savefig(prefix + 'PDE21.eps',format = 'eps')
+plt.savefig(prefix + 'PDE21.png',format = 'png')
 plt.show() 
 # ####################################################################This section is temporary one used only when we plot from saved data ########################################################################################### 
 

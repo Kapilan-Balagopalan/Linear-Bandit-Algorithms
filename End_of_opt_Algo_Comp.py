@@ -111,8 +111,10 @@ date_time = now.strftime("%m%d%Y%H%M%S")
 
 script_name = os.path.basename(__file__)
 file_name = os.path.splitext(script_name)[0] + '0005'+ date_time + '.npy'
+prefix = 'C:/Users/Kapilan/OneDrive - University of Arizona/Academia_Kapilan/Research/Source_code/Lin-SGMED/Lin-SGMED/logs/'
+completeName = os.path.join(prefix , file_name)
 
-with open(file_name, 'wb') as f:
+with open(completeName, 'wb') as f:
 
     np.save(f, cum_regret_arr)
     np.save(f,algo_names)
@@ -122,8 +124,8 @@ plt.xlabel("Time")
 plt.ylabel("Regret")
 plt.title("Regret with time 0.005")
 plt.legend()
-plt.savefig('EOPT1.eps',format = 'eps',dpi=300)
-plt.savefig('EOPT1.png',format = 'png')
+plt.savefig(prefix + 'EOPT1.eps',format = 'eps',dpi=300)
+plt.savefig(prefix + 'EOPT1.png',format = 'png')
 plt.show() 
 
 # ####################################################################This section is temporary one used only when we plot from saved data ########################################################################################### 
