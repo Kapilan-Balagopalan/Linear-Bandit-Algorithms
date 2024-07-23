@@ -30,9 +30,6 @@ def init(seed,K,n,d):
     sVal_dimension = d
     sVal_arm_size = K
     sVal_horizon = n
-    sVal_lambda = d
-    mVal_I = np.eye(sVal_dimension)
-    mVal_lvrg_scr_orgn = sVal_lambda*mVal_I
     sVal_arm_set = A = worse_case_scenario_experiment(K)
     theta_true = theta_true = A[0,:]
     #print(theta_true.shape)
@@ -40,8 +37,7 @@ def init(seed,K,n,d):
     #theta_true = S*(theta_true/ (np.linalg.norm(theta_true, axis=0)))
     best_arm = A[0,:]
     # print(best_arm)
-    return sVal_dimension, sVal_arm_size,sVal_horizon, sVal_lambda, mVal_I, mVal_lvrg_scr_orgn, sVal_arm_set, theta_true,\
-           noise_sigma, delta, S_true, best_arm
+    return sVal_dimension, sVal_arm_size,sVal_horizon, sVal_arm_set, theta_true,noise_sigma, delta, S_true, best_arm
 
 
 
@@ -64,7 +60,7 @@ n_trials = 10
 
 
 cum_regret_arr=  np.zeros((n_trials,n,n_algo))
-
+n_mc_samples = 90
 test_type = "Sphere"
 emp_coeff = [0.99,0,0.99,0.9,0.5]
 opt_coeff = [0,0,0.005,0.05,0.25]
@@ -79,15 +75,14 @@ for K_in in K_set:
     for j in tqdm(range(n_trials)):
     #seed = np.random.randint(1, 15751)
         seed = 15751 + j
-        d, K, n, sVal_lambda, mVal_I, mVal_lvrg_scr_orgn, X, theta_true, noise_sigma, delta, S_true, best_arm = init(seed, K_in , n,
-                                                                                                                d)
+        d, K, n, X, theta_true, noise_sigma, delta, S_true, best_arm = init(seed, K_in , n, d)
         R_true = noise_sigma
         i = 0
         for name in algo_names:
             if(i < 5):
-                algo_list[i] = bandit_factory(test_type,name,X,R_true*Noise_Mismatch,S_true*Norm_Mismatch,n,opt_coeff[i],emp_coeff[i])
+                algo_list[i] = bandit_factory(test_type,name,X,R_true*Noise_Mismatch,S_true*Norm_Mismatch,n,opt_coeff[i],emp_coeff[i],n_mc_samples)
             else:
-                algo_list[i] = bandit_factory(test_type,name,X,R_true*Noise_Mismatch,S_true*Norm_Mismatch,n,0,0)
+                algo_list[i] = bandit_factory(test_type,name,X,R_true*Noise_Mismatch,S_true*Norm_Mismatch,n,0,0,n_mc_samples)
             i = i+1
         i=0
         cum_regret = 0
@@ -114,7 +109,12 @@ date_time = now.strftime("%m%d%Y%H%M%S")
 
 script_name = os.path.basename(__file__)
 file_name = os.path.splitext(script_name)[0] +  date_time + '.npy'
-with open(file_name, 'wb') as f:
+
+
+prefix = 'C:/Users/Kapilan/OneDrive - University of Arizona/Academia_Kapilan/Research/Source_code/Lin-SGMED/Lin-SGMED/logs/'
+completeName = os.path.join(prefix , file_name)
+
+with open(completeName, 'wb') as f:
 
     np.save(f, cum_final_point_regret)
 
@@ -132,7 +132,7 @@ plt.xlabel("Number of Arms")
 plt.ylabel("Cumulate regret")
 plt.title("Regret with number of arms c_gamma = 1")
 plt.legend()
-plt.savefig('gerfge1.png',format = 'png')
+plt.savefig(prefix + 'gerfge1.png',format = 'png')
 plt.show()
  
 # ####################################################################This section is temporary one used only when we plot from saved data ########################################################################################### 

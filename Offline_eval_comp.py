@@ -57,7 +57,7 @@ test_type = "Sphere"
 emp_coeff = [0.99,0.9,0.5]
 opt_coeff = [0.005,0.05,0.25]
 
-n_mc_samples = 1000
+n_mc_samples = 100
 prob_min_thresh = 0.0001
 
 mu_hat = np.zeros((n_trials,n_algo,1))
@@ -89,8 +89,12 @@ for j in tqdm(range(n_trials)):
         cum_mu_hat = 0
 
 
+uniform_average_regret = (np.matmul(X[0,:], theta_true) + np.matmul(X[1,:], theta_true) )/2
+
 plt.hist(mu_hat[:,0,0], bins=30, color='skyblue', edgecolor='black',label = 'LinMED' )
 plt.hist(mu_hat[:,1,0], bins=30, color='green', edgecolor='black', label='LinTS')
+plt.axvline(x = uniform_average_regret, color = 'black', label = 'axvline - full height')
+
 
 print(mu_hat[:,0,0])
 # Adding labels and title

@@ -4,11 +4,6 @@ from Bandit_Env import *
 from scipy import linalg
 
 
-#all the scalar values will start with sVal
-#all the vector values will start with vVal
-#all the matrix values will start with mVal
-#underscore will be used to divide words
-#meaning full names will not have vowels in it e.g leverage = 'lvrg'
 class Lin_TS_FREQ(Bandit):
     ########################################
     def __init__(self, X, R, S, N, flags,n_mc_samples):
