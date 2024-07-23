@@ -30,8 +30,7 @@ def init_offline_eval_exp():
     theta_true[0][0] = 1
     best_arm = A[0,:]
 
-    return sVal_dimension, sVal_arm_size,sVal_horizon , sVal_arm_set, theta_true,\
-           noise_sigma, delta, S_true, best_arm
+    return sVal_dimension, sVal_arm_size,sVal_horizon , sVal_arm_set, theta_true,noise_sigma, delta, S_true, best_arm
 
 
 d, K, n, X, theta_true, noise_sigma, delta, S_true, best_arm = init_offline_eval_exp()

@@ -30,18 +30,13 @@ def init(seed,K,n,d):
     sVal_dimension = d
     sVal_arm_size = K
     sVal_horizon = n
-    sVal_lambda = d
-    mVal_I = np.eye(sVal_dimension)
-    mVal_lvrg_scr_orgn = sVal_lambda*mVal_I
     sVal_arm_set = A = sample_spherical(sVal_arm_size,sVal_dimension)
     theta_true = np.random.randn(d, 1)
-    #print(theta_true.shape)
-    #print(A.shape)
+
     theta_true = S_true*(theta_true/ (np.linalg.norm(theta_true, axis=0)))
     best_arm = np.argmax(np.matmul(A, theta_true))
     # print(best_arm)
-    return sVal_dimension, sVal_arm_size,sVal_horizon, sVal_lambda, mVal_I, mVal_lvrg_scr_orgn, sVal_arm_set, theta_true,\
-           noise_sigma, delta, S_true, best_arm
+    return sVal_dimension, sVal_arm_size,sVal_horizon, sVal_arm_set, theta_true,noise_sigma, delta, S_true, best_arm
 
 
 
@@ -75,10 +70,8 @@ Noise_Mismatch = 1
 Norm_Mismatch = 1
 
 for j in tqdm(range(n_trials)):
-    #seed = np.random.randint(1, 15751)
-    seed = 1597543456 + j
-    d, K, n, sVal_lambda, mVal_I, mVal_lvrg_scr_orgn, X, theta_true, noise_sigma, delta, S_true, best_arm = init(seed, K, n,
-                                                                                                            d)
+    seed = 15751 + j
+    d, K, n, X, theta_true, noise_sigma, delta, S_true, best_arm = init(seed, K, n, d)
     R_true = noise_sigma
     i = 0
     for name in algo_names:

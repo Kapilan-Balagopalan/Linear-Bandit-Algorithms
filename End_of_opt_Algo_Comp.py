@@ -21,21 +21,17 @@ def init_end_of_optimism(eps):
     S_true = 1
     sVal_dimension = d = 2
     sVal_arm_size = K = 3
-    sVal_horizon = n = 1000000
-    sVal_lambda = d
-    mVal_I = np.eye(sVal_dimension)
-    mVal_lvrg_scr_orgn = sVal_lambda*mVal_I
+    sVal_horizon = n = 10000
     sVal_arm_set = A = sample_end_of_optimism(eps)
     theta_true = A[0,:]
     best_arm = A[0,:]
 
-    return sVal_dimension, sVal_arm_size,sVal_horizon, sVal_lambda, mVal_I, mVal_lvrg_scr_orgn, sVal_arm_set, theta_true,\
-           noise_sigma, delta, S_true, best_arm
+    return sVal_dimension, sVal_arm_size,sVal_horizon, sVal_arm_set, theta_true,noise_sigma, delta, S_true, best_arm
 
 
 eps = 0.005
 
-d, K, n, sVal_lambda, mVal_I, mVal_lvrg_scr_orgn, X, theta_true, noise_sigma, delta, S_true, best_arm = init_end_of_optimism(eps)
+d, K, n, X, theta_true, noise_sigma, delta, S_true, best_arm = init_end_of_optimism(eps)
 
 
 n_algo = 6
@@ -50,9 +46,10 @@ pulled_arm_index = np.zeros((n,n_algo))
 test_type = "EOPT"
 emp_coeff = [0.99,0.9,0.5]
 opt_coeff = [0.005,0.05,0.25]
-c_gamma = [0.5,1]
+
 Noise_Mismatch = 1
 Norm_Mismatch = 1
+n_mc_samples = 0
 
 for j in tqdm(range(n_trials)):
     seed = 15751 + j
@@ -61,9 +58,9 @@ for j in tqdm(range(n_trials)):
     i = 0
     for name in algo_names:
         if(i < 3):
-            algo_list[i] = bandit_factory(test_type,name,X, R_true*Noise_Mismatch , S_true*Norm_Mismatch, n,opt_coeff[i],emp_coeff[i])
+            algo_list[i] = bandit_factory(test_type,name,X, R_true*Noise_Mismatch , S_true*Norm_Mismatch, n,opt_coeff[i],emp_coeff[i],n_mc_samples)
         else:
-            algo_list[i] = bandit_factory(test_type,name,X, R_true*Noise_Mismatch, S_true*Norm_Mismatch, n,opt_coeff[i-3],emp_coeff[i-3])
+            algo_list[i] = bandit_factory(test_type,name,X, R_true*Noise_Mismatch, S_true*Norm_Mismatch, n,opt_coeff[i-3],emp_coeff[i-3],n_mc_samples)
         i = i+1
 
     cum_regret = 0

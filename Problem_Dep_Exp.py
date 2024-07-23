@@ -20,20 +20,17 @@ def init_prob_dep_exp():
     S_true = 1
     sVal_dimension = d = 2
     sVal_arm_size = K = 2
-    sVal_horizon = n = 1000000
-    sVal_lambda = d
-    mVal_I = np.eye(sVal_dimension)
-    mVal_lvrg_scr_orgn = sVal_lambda*mVal_I
+    sVal_horizon = n = 10000
     sVal_arm_set = A = sample_problem_dependent_experiment()
     theta_true = A[0,:]
 
     best_arm = A[0,:]
     # print(best_arm)
-    return sVal_dimension, sVal_arm_size,sVal_horizon, sVal_lambda, mVal_I, mVal_lvrg_scr_orgn, sVal_arm_set, theta_true,\
+    return sVal_dimension, sVal_arm_size,sVal_horizon, sVal_arm_set, theta_true,\
            noise_sigma, delta, S_true, best_arm
 
 
-d, K, n, sVal_lambda, mVal_I, mVal_lvrg_scr_orgn, X, theta_true, noise_sigma, delta, S_true, best_arm = init_prob_dep_exp()
+d, K, n, X, theta_true, noise_sigma, delta, S_true, best_arm = init_prob_dep_exp()
 
 n_algo = 3
 
@@ -42,7 +39,7 @@ algo_names = ["LinMED","LinMED", "LinMED"]
 n_trials = 10
 Noise_Mismatch = 1
 Norm_Mismatch = 1
-
+n_mc_samples = 0
 
 cum_regret_arr=  np.zeros((n_trials,n,n_algo))
 
@@ -50,7 +47,9 @@ test_type = "Sphere"
 
 emp_coeff = [0.99,0.9,0.5]
 opt_coeff = [0.005,0.05,0.25]
-c_gamma = 1
+
+
+
 
 for j in tqdm(range(n_trials)):
     seed = 15751 + j
@@ -59,7 +58,7 @@ for j in tqdm(range(n_trials)):
     i = 0
     for name in algo_names:
 
-        algo_list[i] = bandit_factory(test_type,name,X,R_true*Norm_Mismatch,S_true*Noise_Mismatch , n,opt_coeff[i],emp_coeff[i])
+        algo_list[i] = bandit_factory(test_type,name,X,R_true*Norm_Mismatch,S_true*Noise_Mismatch , n,opt_coeff[i],emp_coeff[i],n_mc_samples)
         
         i = i+1
 
