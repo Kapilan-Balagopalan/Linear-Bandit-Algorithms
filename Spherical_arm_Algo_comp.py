@@ -110,7 +110,9 @@ now = datetime.now() # current date and time
 date_time = now.strftime("%m%d%Y%H%M%S")
 
 
-prefix = 'C:/Users/Kapilan/OneDrive - University of Arizona/Academia_Kapilan/Research/Source_code/Lin-SGMED/Lin-SGMED/logs/'
+current_dir = os.path.dirname(__file__)
+prefix = current_dir + '/logs/'
+
 
 script_name = os.path.basename(__file__)
 file_name = os.path.splitext(script_name)[0] +name_common +  date_time + '.npy'

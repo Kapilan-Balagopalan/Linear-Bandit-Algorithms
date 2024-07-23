@@ -93,7 +93,8 @@ script_name = os.path.basename(__file__)
 
 file_name = os.path.splitext(script_name)[0] +  date_time + '.npy'
 
-prefix = 'C:/Users/Kapilan/OneDrive - University of Arizona/Academia_Kapilan/Research/Source_code/Lin-SGMED/Lin-SGMED/logs/'
+current_dir = os.path.dirname(__file__)
+prefix = current_dir + '/logs/'
 completeName = os.path.join(prefix , file_name)
 
 with open(completeName, 'wb') as f:
