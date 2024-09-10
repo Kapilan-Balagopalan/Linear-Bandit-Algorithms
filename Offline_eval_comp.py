@@ -25,27 +25,25 @@ def init_offline_eval_exp():
     sVal_dimension = d = 2
     sVal_arm_size = K = 2
     sVal_horizon = n = 1000
-
+    n_trials = 10
     sVal_arm_set = A = sample_offline_eval_experiment()
     theta_true = np.zeros((d,1))
     theta_true[0][0] = 1
     best_arm = A[0,:]
 
-    return sVal_dimension, sVal_arm_size,sVal_horizon , sVal_arm_set, theta_true,noise_sigma, delta, S_true, best_arm
+    return sVal_dimension, sVal_arm_size,sVal_horizon , sVal_arm_set, theta_true,noise_sigma, delta, S_true, best_arm,n_trials
 
 
 
-def thread_process(mu_hat,n_gap,seed_in):
+def thread_process(n_gap,seed_in):
     print(seed_in)
-    d, K, n, X, theta_true, noise_sigma, delta, S_true, best_arm = init_offline_eval_exp()
+    d, K, n, X, theta_true, noise_sigma, delta, S_true, best_arm,n_trials = init_offline_eval_exp()
 
     n_algo = 2
 
     algo_list = [None] * n_algo
 
     algo_names = ["LinMED", "Lin-TS-Freq"]
-
-    n_trials = 1000
 
     Noise_Mismatch = 1
     Norm_Mismatch = 1
@@ -60,12 +58,14 @@ def thread_process(mu_hat,n_gap,seed_in):
     emp_coeff = [0.99, 0.9, 0.5]
     opt_coeff = [0.005, 0.1, 0.5]
 
-    n_mc_samples = 1000
-    prob_min_thresh = 0.0001
+    n_mc_samples = 100
+    prob_min_thresh = 0.005
 
-    #mu_hat = np.zeros((n_trials, n_algo, 1))
+    mu_hat = np.zeros((n_gap, n_algo, 1))
     for j in tqdm(range(n_gap)):
-        seed = 15751 + n_gap*seed_in + j
+        # if(j==10):
+        #     print("Thread started")
+        #seed = 15751 + n_gap*seed_in + j
         i = 0
         for name in algo_names:
             algo_list[i] = bandit_factory(test_type, name, X, R_true * Noise_Mismatch, S_true * Norm_Mismatch, n,
@@ -81,43 +81,35 @@ def thread_process(mu_hat,n_gap,seed_in):
                 prob_chosen = algo_list[i].get_probability_arm()
                 offline_logged_data[j][t][i][1] = prob_chosen
                 inst_regret = calc_regret(arm, theta_true, X)
-
                 reward = receive_reward(arm, theta_true, noise_sigma, X)
                 offline_logged_data[j][t][i][2] = reward
-                cum_mu_hat = cum_mu_hat + reward / np.maximum(prob_min_thresh, prob_chosen)
+                if (i==1):
+                    cum_mu_hat = cum_mu_hat + reward / np.maximum(prob_min_thresh, prob_chosen)
+                else:
+                    cum_mu_hat = cum_mu_hat + reward / prob_chosen
+
                 algo_list[i].update(arm, reward)
 
             mu_hat[j][i][0] = cum_mu_hat / (K * n)
             cum_mu_hat = 0
 
+    current_dir = os.path.dirname(__file__)
+    prefix = current_dir + '/logs/'
+
+    script_name = os.path.basename(__file__)
+    file_name = str(seed_in) + '.npy'
+
+    completeName = os.path.join(prefix, file_name)
+
+    with open(completeName, 'wb') as f:
+
+        np.save(f, mu_hat)
+
 
 def t():
-    d, K, n, X, theta_true, noise_sigma, delta, S_true, best_arm = init_offline_eval_exp()
-
-    n_algo = 2
-
-    algo_list = [None] * n_algo
-
+    d, K, n, X, theta_true, noise_sigma, delta, S_true, best_arm,n_trials = init_offline_eval_exp()
     algo_names = ["LinMED", "Lin-TS-Freq"]
 
-    n_trials = 1000
-
-    Noise_Mismatch = 1
-    Norm_Mismatch = 1
-    R_true = noise_sigma
-
-    cum_regret_arr = np.zeros((n_trials, n, n_algo))
-
-    offline_logged_data = np.zeros((n_trials, n, n_algo, 3))
-
-    test_type = "Sphere"
-
-    emp_coeff = [0.99, 0.9, 0.5]
-    opt_coeff = [0.005, 0.1, 0.5]
-
-    n_mc_samples = 1000
-    prob_min_thresh = 0.0001
-    n_trials = 1000
     n_cpu = 1
     n_gap = int(n_trials/n_cpu)
     pool = Pool(processes=n_cpu)
@@ -125,12 +117,24 @@ def t():
     mu_hat = np.zeros((n_trials, n_algo, 1))
 
     for i in range(n_cpu):
-        start_ind = int(i*n_gap)
-        end_ind = int((i+1)*n_gap)
-        pool.apply_async(thread_process, args=(mu_hat[start_ind:end_ind,:,:], n_gap,i))
+        pool.apply_async(thread_process, args=( n_gap,i))
 
     pool.close()
     pool.join()
+
+    current_dir = os.path.dirname(__file__)
+    prefix = current_dir + '/logs/'
+
+    script_name = os.path.basename(__file__)
+    for i in range(n_cpu):
+        start_ind = int(i * n_gap)
+        end_ind = int((i + 1) * n_gap)
+        file_name = str(i) + '.npy'
+
+        completeName = os.path.join(prefix, file_name)
+
+        with open(completeName, 'rb') as f:
+            mu_hat[start_ind:end_ind,:,:] = np.load(f)
 
     uniform_average_regret = (np.matmul(X[0, :], theta_true) + np.matmul(X[1, :], theta_true)) / 2
 
@@ -150,15 +154,19 @@ def t():
         np.save(f, mu_hat)
         np.save(f, algo_names)
 
-    plt.hist(mu_hat[:, 0, 0], bins=30, color='skyblue', alpha=0.5, edgecolor='black', label='LinMED')
-    plt.hist(mu_hat[:, 1, 0], bins=30, color='green', alpha=0.5, edgecolor='black', label='LinTS')
+    plt.hist(mu_hat[:, 0, 0], bins=100, color='skyblue', alpha=0.5, edgecolor='black', label='LinMED')
+    plt.axvline(mu_hat[:, 0, 0].mean(), color='skyblue', linestyle='dashed', linewidth=1)
+    plt.hist(mu_hat[:, 1, 0], bins=100, color='green', alpha=0.5, edgecolor='black', label='LinTS')
+    plt.axvline(mu_hat[:, 1, 0].mean(), color='green', linestyle='dashed', linewidth=1)
     plt.axvline(x=uniform_average_regret, color='black', label='axvline - full height')
 
-    print(mu_hat[:, 0, 0])
+   # print(mu_hat[:, 0, 0])
+    print(mu_hat[:, 0, 0].mean())
+    print(mu_hat[:, 1, 0].mean())
     # Adding labels and title
-    plt.xlabel('Values')
-    plt.ylabel('Frequency')
-    plt.title('Basic Histogram')
+    plt.xlabel('Expected Reward')
+    plt.ylabel('Trials')
+    plt.title('Histogram of Expected rewards vs trials')
     plt.legend()
     plt.savefig(prefix + 'Img-2.png', format='png')
     plt.show()

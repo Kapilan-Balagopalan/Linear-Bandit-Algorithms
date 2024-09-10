@@ -47,6 +47,7 @@ class Lin_TS_FREQ(Bandit):
         self.arm_chosen = 0
         self.n_mc_samples = n_mc_samples
 
+    @profile
     def next_arm(self):
 
         if (self.t == 1):
@@ -68,6 +69,7 @@ class Lin_TS_FREQ(Bandit):
         self.arm_chosen = chosen
         return chosen
 
+    @profile
     def get_probability_arm(self):
         if (self.t == 1):
             return 1/self.K
@@ -89,7 +91,7 @@ class Lin_TS_FREQ(Bandit):
 
         return prob_list[self.arm_chosen]/self.n_mc_samples
 
-
+    @profile
     def update(self, pulled_idx, y_t):
 
         xt = self.X[pulled_idx, :]
@@ -104,9 +106,9 @@ class Lin_TS_FREQ(Bandit):
         evalues, evectors = np.linalg.eig(self.Vt)
         # Ensuring square root matrix exists
         assert (evalues >= 0).all()
-        self.invVt = evectors * np.reciprocal(evalues) @ np.linalg.inv(evectors)
+        self.invVt = evectors * np.reciprocal(evalues) @ evectors.T
         #self.invVt_sqrt = linalg.sqrtm(self.invVt )
-        self.invVt_sqrt = evectors * np.sqrt(np.reciprocal(evalues)) @ np.linalg.inv(evectors)
+        self.invVt_sqrt = evectors * np.sqrt(np.reciprocal(evalues)) @ evectors.T
         
         #self.invVt = np.linalg.inv(self.Vt)
         self.theta_hat = np.matmul(self.invVt, self.XTy.T)

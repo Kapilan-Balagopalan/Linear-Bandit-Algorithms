@@ -1,6 +1,6 @@
 import numpy as np
 import ipdb
-
+from line_profiler import profile
 
 def calc_gamma_LinZHU(N,d, delta):
     c_OPT = 4

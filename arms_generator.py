@@ -29,10 +29,10 @@ def sample_problem_dependent_experiment():
 
 def sample_offline_eval_experiment():
     A = np.zeros((2,2))
-    A[0, 0] = 0.8
-    A[0, 1] = 0.6
-    A[1, 0] = 0.75
-    A[1, 1] = 0.65
+    A[0, 0] = 0.9
+    A[0, 1] = 0.3
+    A[1, 0] = 0.8
+    A[1, 1] = 0.5
     return A
 
 def worse_case_scenario_experiment(K):

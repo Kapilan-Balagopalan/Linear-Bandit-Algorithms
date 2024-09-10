@@ -35,7 +35,7 @@ d, K, n, X, theta_true, noise_sigma, delta, S_true, best_arm = init_prob_dep_exp
 n_algo = 3
 
 algo_list = [None]*n_algo
-algo_names = ["LinMED","LinMED", "LinMED"]
+algo_names = ["Lin-TS-Freq","LinMED", "LinMED"]
 n_trials = 10
 Noise_Mismatch = 1
 Norm_Mismatch = 1

@@ -45,6 +45,16 @@ class Lin_SGMED(Bandit):
 
         self.prob_chosen = 0
 
+
+    def check_event_E(self):
+        for i in range(self.K):
+            a = self.X[i,:]
+            vVal_lev_score_a = np.matmul(np.matmul(a, self.invVt), a.T)
+            if (vVal_lev_score_a > 1):
+                    return i,True
+        return 0, False
+
+    @profile
     def next_arm(self):
 
         prob_dist = calc_q_opt_design(self.AugX)
@@ -64,7 +74,14 @@ class Lin_SGMED(Bandit):
             # print("Final probability distribution", MED_prob_dist)
             # print(np.sum(MED_prob_dist))
             # print(MED_prob_dist.shape)
-        Arm_t, chosen = sample_action(self.X, MED_prob_dist)
+        index, check_event_E = self.check_event_E()
+        if(check_event_E == True):
+            MED_prob_dist =MED_prob_dist/2
+            MED_prob_dist[index] = MED_prob_dist[index] + 0.5
+            Arm_t, chosen = sample_action(self.X, MED_prob_dist)
+            #print("The right class is implemented")
+        else:
+            Arm_t, chosen = sample_action(self.X, MED_prob_dist)
         self.prob_chosen = MED_prob_dist[chosen][0]
         return chosen
 
@@ -99,9 +116,11 @@ class Lin_SGMED(Bandit):
         for i in range(self.K):
             self.AugX[i,:] = np.sqrt(self.MED_quo[i][0]) * self.X[i,:]
 
+    @profile
     def get_probability_arm(self):
         return self.prob_chosen
 
+    @profile
     def update(self, pulled_idx, y_t):
 
         xt = self.X[pulled_idx, :]
