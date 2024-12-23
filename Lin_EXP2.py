@@ -6,7 +6,8 @@ from Bandit_Env import *
 
 class Lin_EXP2(Bandit):
     ########################################
-    def __init__(self, X, R, S, N, flags):
+    def __init__(self, X, R, S, N,d,delay_switch,delay_time, flags):
+        self.d = d
         self.X = X
         self.R = R
         self.S = S
@@ -32,13 +33,17 @@ class Lin_EXP2(Bandit):
 
         #print(self.prob_dist_opt.shape)
         self.XTy = np.zeros((self.d,1))
-        
+
+        self.delay_switch = delay_switch
+        self.delay_time = delay_time
+        self.update_buffer_xt = Queue(maxsize=self.delay_time)
+        self.update_buffer_y = Queue(maxsize=self.delay_time)
         
         #print("original shape is",self.theta_est.shape)
 
     
 
-    def next_arm(self):
+    def next_arm(self,X_t):
         #valid_idx = np.setdiff1d(np.arange(self.K), self.do_not_ask)
         if (self.t == 1):
             self.EXP2_prob_dist = self.prob_dist_opt
@@ -47,7 +52,7 @@ class Lin_EXP2(Bandit):
             return chosen
         #print(self.X.shape)
         #print(self.theta_est.shape)
-        exploit_part =  np.matmul(self.X, self.theta_est)
+        exploit_part =  self.X @ self.theta_est
         #print(exploit_part.shape)
         self.eta_t = calc_eta_t_EXP2(self.t + 1,self.d,self.K)
         if(self.eta_t > 1/self.d):
@@ -64,9 +69,8 @@ class Lin_EXP2(Bandit):
         return chosen
     
 
-    def update(self, pulled_idx, y_t):
+    def update(self, xt, y_t):
 
-        xt = self.X[pulled_idx, :]
         qt = np.eye(self.d)
         XTy  = y_t*xt
 
@@ -74,14 +78,22 @@ class Lin_EXP2(Bandit):
             aa_t = np.outer(self.X[i,:],self.X[i,:])
             qt = qt + self.EXP2_prob_dist[i][0]*aa_t
 
-        #print(qt.shape, "The shape of Qt")
-        
-
         q_t_inv = np.linalg.inv(qt )
 
-        theta_est_inst = np.matmul(q_t_inv,XTy.T)
-        #print(theta_est_inst.shape)
+        theta_est_inst = q_t_inv @ XTy.T
 
         self.theta_est  = self.theta_est + theta_est_inst
 
-        self.t = self.t +  1
+
+    def update_delayed(self, xt, y_t):
+        if (self.delay_switch == False):
+            self.update(xt, y_t)
+        else:
+            self.update_buffer_y.put(y_t)
+            self.update_buffer_xt.put(xt)
+            if (self.t % self.delay_time == 1):
+                queue_sze = self.update_buffer_y.qsize()
+                for i in range(queue_sze):
+                    self.update(self.update_buffer_xt.get(), self.update_buffer_y.get())
+
+        self.t = self.t + 1

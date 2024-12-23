@@ -6,7 +6,7 @@ from Bandit_Env import *
 
 class Lin_SGMED_NOPT(Bandit):
     ########################################
-    def __init__(self, X, R, S,N ,opt_coeff,emp_coeff,flags):
+    def __init__(self, X, R, S, N, d, opt_coeff, emp_coeff, delay_switch, delay_time, flags):
         self.X = X
         self.R = R
         self.S = S
@@ -43,10 +43,10 @@ class Lin_SGMED_NOPT(Bandit):
 
         self.logdetV = self.d * np.log(self.lam)
 
-    def next_arm(self):
+    def next_arm(self,X):
         #valid_idx = np.setdiff1d(np.arange(self.K), self.do_not_ask)
         if (self.t == 1):
-            return np.random.randint(self.K) 
+            return np.random.randint(self.K)
         
         qt = self.All_arm
 
@@ -91,9 +91,9 @@ class Lin_SGMED_NOPT(Bandit):
         for i in range(self.K):
             self.AugX[i,:] = np.sqrt(self.MED_quo[i][0]) * self.X[i,:]
 
-    def update(self, pulled_idx, y_t):
+    def update_delayed(self, xt, y_t):
 
-        xt = self.X[pulled_idx,:]
+        #xt = self.X[pulled_idx,:]
 
         self.XTy = self.XTy +  y_t * xt
         self.Vt =  self.Vt + np.outer(xt, xt)
@@ -111,12 +111,8 @@ class Lin_SGMED_NOPT(Bandit):
         self.gamma_t =  calc_sqrt_beta_det2(self.d,self.R, self.lam, self.delta, self.S,self.logdetV)
 
         self.estimate_empirical_reward_gap(self.X, theta_hat)
-        if(self.flags["version"] == 1):
-            self.calc_MED_ver1_probability_distribution()
-        elif(self.flags["version"] == 2): 
-            self.calc_MED_ver2_probability_distribution()
-        else:
-            raise NotImplementedError()
+
+        self.calc_MED_ver2_probability_distribution()
         
        # self.scale_arms()
         

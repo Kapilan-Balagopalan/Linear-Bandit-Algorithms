@@ -3,23 +3,27 @@ from arms_generator import *
 import numpy as np
 import matplotlib.pyplot as plt
 
-
-import numpy.random as ra
-import numpy.linalg as la
-
-
 from BanditFactory import *
-
 import ipdb
 
 from datetime import datetime
 
-import os 
-
+import os
 
 from tqdm import tqdm
- 
- 
+
+n_algo = 9
+algo_list = [None] * n_algo
+algo_names = ["OFUL","Lin-TS-Freq","LinZHU","LinZHU-AT","Lin-IMED-1","Lin-IMED-3","LinMED","LinMED","LinMED"]
+algo_names_plot = ["OFUL","Lin-TS-Freq","LinZHU","LinZHU-AT","Lin-IMED-1","Lin-IMED-3","LinMED-99","LinMED-90","LinMED-50"]
+test_type = "Sphere"
+emp_coeff = [0.99, 0.9, 0.5]
+opt_coeff = [0.005, 0.05, 0.25]
+
+n_cpu = 10
+n_trials = 100
+
+algo_color = ["r","b","g", "c","m","k", "gray", "black", "orange"]
 
 
 def init(seed,K,n,d):
@@ -44,54 +48,45 @@ def init(seed,K,n,d):
 
 
 K = 20
-n = 100
+n = 5000
 d = 2
 
 
-
-n_algo = 7
-
-algo_list = [None]*n_algo
-algo_names = ["EXP2","Lin-IMED-3","Lin-TS-Freq","LinMED", "LinZHU","OFUL","Lin-SGMED-NOPT"]
-#algo_names = ["OFUL", "Lin-TS-Freq"]
-n_trials = 5
-
-
-
-emp_coeff = [0.99,0.9,0.5]
-opt_coeff = [0.005,0.05,0.25]
-
-
-n_mc_samples = 0
 cum_regret_arr=  np.zeros((n_trials,n,n_algo))
 
-test_type = "Sphere"
 Noise_Mismatch = 1
 Norm_Mismatch = 1
+delay_switch = False
+reward_delay = 20
+
 
 for j in tqdm(range(n_trials)):
-    seed = 15751 + j
+    seed = 15751
     d, K, n, X, theta_true, noise_sigma, delta, S_true, best_arm = init(seed, K, n, d)
     R_true = noise_sigma
     i = 0
     for name in algo_names:
-        if(i < 7):
-            algo_list[i] = bandit_factory(test_type,name,X,R_true*Noise_Mismatch,S_true*Norm_Mismatch ,n,opt_coeff[0],emp_coeff[0],n_mc_samples)
-        else :
-            algo_list[i] = bandit_factory(test_type,name,X,R_true*Noise_Mismatch,S_true*Norm_Mismatch,n,opt_coeff[i-7],emp_coeff[i-7],n_mc_samples)
-        i = i+1
+        if (i >= 6):
+            algo_list[i] = bandit_factory(test_type, name, X, R_true * Noise_Mismatch, S_true * Norm_Mismatch, n, d,
+                                          opt_coeff[i - 6], emp_coeff[i - 6], 1000, delay_switch, reward_delay)
+        else:
+            algo_list[i] = bandit_factory(test_type, name, X, R_true * Noise_Mismatch, S_true * Norm_Mismatch, n, d,
+                                          opt_coeff[0], emp_coeff[0], 1000, delay_switch, reward_delay)
+        i = i + 1
 
     cum_regret = 0
     for i in range(n_algo):
         cum_regret = 0
         for t in range(n):
-            arm  = algo_list[i].next_arm()
+            arm  = algo_list[i].next_arm(X)
             inst_regret = calc_regret(arm, theta_true, X)
             cum_regret = cum_regret + inst_regret
             cum_regret_arr[j][t][i] =  cum_regret
             reward = receive_reward(arm, theta_true, noise_sigma, X)
-            algo_list[i].update(arm,reward)
+            algo_list[i].update_delayed(X[arm,:],reward)
         
+
+
 
 t_alpha = 0.6
 
@@ -127,16 +122,7 @@ with open(completeName, 'wb') as f:
 
 
 
-#n_algo = 7
 
-#algo_list = [None]*n_algo
-#algo_names = ['SpannerIGW', 'OFUL' ,'Lin-IMED-1' ,'Lin-IMED-3',
-# 'SpannerIGW-Anytime', 'EXP2' ,'Lin-TS-Freq',r'$\text{LinMED}(\alpha_{\text{emp}} = 0.99)$',
-# r'$\text{LinMED}(\alpha_{\text{emp}} = 0.90)$', r'$\text{LinMED}(\alpha_{\text{emp}} = 0.50)$']
-
-algo_color = ['black',"red","lime", "darkgreen","gray","yellow", "saddlebrown", "magenta","darkmagenta","darkviolet","dodgerblue","blue","midnightblue"]
-
-n_trials = 30
 
 
 

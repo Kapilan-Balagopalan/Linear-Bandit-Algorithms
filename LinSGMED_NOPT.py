@@ -2,7 +2,7 @@ from optimaldesign import *
 from arms_generator import *
 import numpy as np
 import matplotlib.pyplot as plt
-
+from matplotlib.backends.backend_pdf import PdfPages
 
 import numpy.random as ra
 import numpy.linalg as la
@@ -22,9 +22,8 @@ from tqdm import tqdm
  
 
 
-def init(seed,K,n,d):
-    np.random.seed(seed)
-    noise_sigma = 3
+def init(K,n,d):
+    noise_sigma = 1
     delta = 0.01
     S_true = 1
     sVal_dimension = d
@@ -32,12 +31,10 @@ def init(seed,K,n,d):
     sVal_horizon = n
     sVal_arm_set = A = worse_case_scenario_experiment(K)
     theta_true = theta_true = A[0,:]
-    #print(theta_true.shape)
-    #print(A.shape)
-    #theta_true = S*(theta_true/ (np.linalg.norm(theta_true, axis=0)))
+
     best_arm = A[0,:]
     # print(best_arm)
-    return sVal_dimension, sVal_arm_size,sVal_horizon, sVal_arm_set, theta_true,noise_sigma, delta, S_true, best_arm
+    return sVal_arm_set, theta_true,noise_sigma, delta, S_true, best_arm
 
 
 
@@ -45,181 +42,137 @@ def init(seed,K,n,d):
 
 
 #K = 100
-n = 10000
+n = 20000
 d = 2
 
 size_k_set = 5
 
-K_set = [8,16,32,64,128]
+K_set = [4,8,16,32,64]
 
-n_algo = 6
+n_algo = 4
 
 algo_list = [None]*n_algo
-algo_names = ["LinMED","LinMED","LinMED","LinMED", "LinMED","Lin-SGMED-NOPT"]
+algo_names = ["Lin-SGMED-NOPT","LinMED","LinMED","LinMED"]
+
+n_cpu = 10
 n_trials = 10
 
-
-cum_regret_arr=  np.zeros((n_trials,n,n_algo))
 n_mc_samples = 90
 test_type = "Sphere"
-emp_coeff = [0.99,0,0.99,0.9,0.5]
-opt_coeff = [0,0,0.005,0.05,0.25]
-c_gamma = 0.5
-cum_final_point_regret = np.zeros((n_algo,size_k_set))
-k_set_counter = 0
-Noise_Mismatch = 1
-Norm_Mismatch = 1
+emp_coeff = [0.99,0.9,0.5]
+opt_coeff = [0.005,0.05,0.25]
+
+algo_names_plot = ["LinMEDNOPT", "LinMED(" + r'$\alpha_{emp}$' + " = 0.99)", "LinMED(" + r'$\alpha_{emp}$' + "= 0.90)",
+                  "LinMED(" + r'$\alpha_{emp}$' + " = 0.50)"]
+algo_color = ['y', "r", "b", "g", "c", "m", "k", "gray"]
 
 
-for K_in in K_set:
-    for j in tqdm(range(n_trials)):
-    #seed = np.random.randint(1, 15751)
-        seed = 15751 + j
-        d, K, n, X, theta_true, noise_sigma, delta, S_true, best_arm = init(seed, K_in , n, d)
-        R_true = noise_sigma
-        i = 0
-        for name in algo_names:
-            if(i < 5):
-                algo_list[i] = bandit_factory(test_type,name,X,R_true*Noise_Mismatch,S_true*Norm_Mismatch,n,opt_coeff[i],emp_coeff[i],n_mc_samples)
-            else:
-                algo_list[i] = bandit_factory(test_type,name,X,R_true*Noise_Mismatch,S_true*Norm_Mismatch,n,0,0,n_mc_samples)
-            i = i+1
-        i=0
-        cum_regret = 0
-        for i in range(n_algo):
-            cum_regret = 0
-            for t in range(n):
-                arm  = algo_list[i].next_arm()
-                inst_regret = calc_regret(arm, theta_true, X)
-                cum_regret = cum_regret + inst_regret
-                cum_regret_arr[j][t][i] =  cum_regret
-                reward = receive_reward(arm, theta_true, noise_sigma, X)
-                algo_list[i].update(arm,reward)
-            
-            cum_final_point_regret[i][k_set_counter] = cum_final_point_regret[i][k_set_counter] + cum_regret
-    k_set_counter = k_set_counter + 1    
+def thread_process(n_gap,seed_in):
+    np.random.seed(seed_in)
+    Noise_Mismatch = 3
+    Norm_Mismatch = 1
+    return
+    cum_final_point_regret = np.zeros((n_algo, size_k_set))
+    k_set_counter = 0
+    for K_in in K_set:
+        X, theta_true, noise_sigma, delta, S_true, best_arm = init(K_in, n, d)
+        for j in tqdm(range(n_gap)):
+            R_true = noise_sigma
+            i = 0
 
+            for name in algo_names:
+                if (i < 1):
+                    algo_list[i] = bandit_factory(test_type, name, X, R_true * Noise_Mismatch, S_true * Norm_Mismatch, n, d,
+                                                  opt_coeff[i], emp_coeff[i], n_mc_samples, False, 5)
 
+                else:
+                    algo_list[i] = bandit_factory(test_type, name, X, R_true * Noise_Mismatch, S_true * Norm_Mismatch, n, d,
+                                                  opt_coeff[i - 1], emp_coeff[i - 1], n_mc_samples, False, 5)
+                i = i + 1
+                #print("comes here")
+            for i in range(n_algo):
+                cum_regret = 0
+                for t in range(n):
+                    arm = algo_list[i].next_arm(X)
+                    inst_regret = calc_regret(arm, theta_true, X)
+                    cum_regret = cum_regret + inst_regret
+                    #cum_regret_arr[j][t][i] = cum_regret
+                    reward = receive_reward(arm, theta_true, noise_sigma, X)
+                    algo_list[i].update_delayed(X[arm, :], reward)
 
-t_alpha = 1
+                cum_final_point_regret[i][k_set_counter] = cum_final_point_regret[i][k_set_counter] + cum_regret
+        k_set_counter = k_set_counter + 1
+        
+    current_dir = os.path.dirname(__file__)
+    prefix = current_dir + '/logs/'
 
+    script_name = os.path.basename(__file__)
+    file_name = str(seed_in) + '.npy'
 
-now = datetime.now() # current date and time
-date_time = now.strftime("%m%d%Y%H%M%S")
+    completeName = os.path.join(prefix, file_name)
 
-script_name = os.path.basename(__file__)
-file_name = os.path.splitext(script_name)[0] +  date_time + '.npy'
+    with open(completeName, 'wb') as f:
 
-
-current_dir = os.path.dirname(__file__)
-prefix = current_dir + '/logs/'
-completeName = os.path.join(prefix , file_name)
-
-with open(completeName, 'wb') as f:
-
-    np.save(f, cum_final_point_regret)
-
-i=0
-algo_names = ["LinMED-9900","LinMED-0000","LinMED-99","LinMED-90", "LinMED-50","Lin-SGMED-NOPT"]
-algo_color = ['y',"r","b","g", "c","m","k", "gray"]
-for name in algo_list:
-    plt.plot(np.log(K_set), cum_final_point_regret[i,:]/n_trials , color = algo_color[i],label=algo_names[i])
-    #plt.fill_between(np.arange(n),cum_regret_confidence_up[:,i], cum_confidence_down[:,i], alpha=.3)
-    i = i + 1
-
-# Naming the x-axis, y-axis and the whole graph
-plt.grid()
-plt.xlabel("Number of Arms")
-plt.ylabel("Cumulate regret")
-plt.title("Regret with number of arms c_gamma = 1")
-plt.legend()
-plt.savefig(prefix + 'gerfge1.png',format = 'png')
-plt.show()
- 
-# ####################################################################This section is temporary one used only when we plot from saved data ########################################################################################### 
-
-#
-
-""" stored_data_1 = "LinSGMED_NOPT05192024180339.npy"
-stored_data_2 = "LinSGMED_NOPT05192024224733.npy"
-stored_data_3 = "LinSGMED_NOPT05192024232559.npy"
-
-with open(stored_data_1, 'rb') as f:
-
-    a = np.load(f)
-
-with open(stored_data_2, 'rb') as g:
-
-    b = np.load(g)
-
-with open(stored_data_3, 'rb') as h:
-
-    c = np.load(h)
-#cum_regret_confidence_up = cum_regret_mean + (t_alpha * cum_regret_mean_std)/np.sqrt(n_trials)
-#cum_confidence_down = cum_regret_mean - (t_alpha * cum_regret_mean_std)/np.sqrt(n_trials)
-
-
-i=0
-K_set = [16,32,64]
-n_trials = 10
-n_algo = 2
-
-n = 100000
-d = 2
-size_k_set = 7
-
-K_set = [16,32,64,128,256,512,1024]
-
-n_algo = 2
-
-algo_list = [None]*n_algo
-algo_names = ["Lin-SGMED-1","Lin-SGMED-NOPT"]
-#algo_names = ["OFUL", "Lin-TS-Freq"]
-n_trials = 10
-
-cum_regret_arr=  np.zeros((n_trials,n,n_algo))
-cum_final_point_regret = np.zeros((n_algo,size_k_set))
-
-cum_final_point_regret[:,0:3] = a
-cum_final_point_regret[:,3:6] = b
-cum_final_point_regret[:,6] = c[:,0]
-
-#size_k_set = 7
-
-#K_set = [16,32,64,128,256,512,1024]
-
-n_algo = 2
-
-algo_list = [None]*n_algo
-algo_names = ["Lin-SGMED","Lin-SGMED-NOPT"]
-
-for name in algo_list:
-    plt.plot(np.log(K_set), np.log((cum_final_point_regret[i,:]/n_trials)) , label=algo_names[i])
-    #plt.fill_between(np.arange(n),cum_regret_confidence_up[:,i], cum_confidence_down[:,i], alpha=.3)
-    i = i + 1
+        np.save(f, cum_final_point_regret)
 
 
 
-# Naming the x-axis, y-axis and the whole graph
-plt.grid()
-plt.xlabel("Number of Arms (log (K))")
-plt.ylabel("Cumulative regret(log ($Reg_n$))")
-plt.title("Regret with $K$")
-plt.legend()
-plt.savefig('LAS1.eps',format = 'eps',dpi=300)
-plt.savefig('LAS1.png',format = 'png')
-plt.show() 
-
-now = datetime.now() # current date and time
-date_time = now.strftime("%m%d%Y%H%M%S")
-
-script_name = os.path.basename(__file__)
-file_name = os.path.splitext(script_name)[0] +  date_time + '.npy'
-with open(file_name, 'wb') as f:
-
-    np.save(f, cum_final_point_regret) """
 
 
-# ####################################################################This section is temporary one used only when we plot from saved data ########################################################################################### 
 
-#
+
+
+def t():
+    np.random.seed(15751)
+    n_gap = int(n_trials/n_cpu)
+    pool = Pool(processes=n_cpu)
+
+
+    cum_final_point_regret = np.zeros((n_algo, size_k_set))
+
+    for i in range(n_cpu):
+        pool.apply_async(thread_process, args=(n_gap,i))
+
+    pool.close()
+    pool.join()
+
+    current_dir = os.path.dirname(__file__)
+    prefix = current_dir + '/logs/Final_Paper_K_Dependency/'
+
+    script_name = os.path.basename(__file__)
+    for i in range(n_cpu):
+        start_ind = int(i * n_gap)
+        end_ind = int((i + 1) * n_gap)
+        file_name = str(i) + '.npy'
+
+        completeName = os.path.join(prefix, file_name)
+
+        with open(completeName, 'rb') as f:
+            cum_final_point_regret[:,:] = cum_final_point_regret[:,:]  + np.load(f)
+
+    t_alpha = 1
+
+    i = 0
+    for name in algo_list:
+        plt.plot(np.log(K_set), np.log(cum_final_point_regret[i, :] / n_trials), color=algo_color[i],
+                 label=algo_names_plot[i],linewidth=3)
+        # plt.fill_between(np.arange(n),cum_regret_confidence_up[:,i], cum_confidence_down[:,i], alpha=.3)
+        i = i + 1
+
+    # Naming the x-axis, y-axis and the whole graph
+    plt.grid()
+    plt.xlabel("Number of Arms",fontsize=15)
+    plt.ylabel("Cumulate regret" + r'$\log(Reg_n)$',fontsize=15)
+    plt.xticks(fontsize=15)
+    plt.yticks(fontsize=15)
+    #plt.title("Regret with number of arms")
+    plt.legend(fontsize=15)
+    plt.savefig(prefix + 'KDEP1.png', format='png')
+    #plt.set_rasterized(True)
+    plt.savefig(prefix + 'KDEP1.eps', format='eps', dpi=300)
+    plt.savefig(prefix + 'KDEP1.pdf', format='pdf')
+    plt.show()
+
+
+if __name__ == '__main__':
+    t()

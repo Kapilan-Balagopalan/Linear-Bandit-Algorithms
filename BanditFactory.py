@@ -8,13 +8,16 @@ from Lin_TS_Freq import *
 from Lin_SGMED_NOPT import *
 from LinMED import *
 
-def bandit_factory(test_type,name, X, R, S,n,opt_coeff,emp_coeff,n_mc_samples):
-    K, d = X.shape
+def bandit_factory(test_type,name, X, R, S,n,d,opt_coeff,emp_coeff,n_mc_samples,delay_switch= False, delay_time = 0):
+
     opt_gen = {
         'X': X,
         'R': R,
         'S': S,
         'N': n,
+        'd':d,
+        'delay_switch':delay_switch,
+        'delay_time' : delay_time,
         'flags': {"version": 1, "type": test_type}
     };
     if (name == "OFUL"):
@@ -26,7 +29,13 @@ def bandit_factory(test_type,name, X, R, S,n,opt_coeff,emp_coeff,n_mc_samples):
     if (name == "Lin-TS-Freq"):
         opt_ts = {'n_mc_samples':n_mc_samples}
         opt_ts.update(opt_gen)
-        opt_ts['flags'] = {"version": None, "type": test_type}
+        opt_ts['flags'] = {"version": 1, "type": test_type}
+        algo = Lin_TS_FREQ(**opt_ts)
+        return algo
+    if (name == "Lin-TS-Bayes"):
+        opt_ts = {'n_mc_samples':n_mc_samples}
+        opt_ts.update(opt_gen)
+        opt_ts['flags'] = {"version": 2, "type": test_type}
         algo = Lin_TS_FREQ(**opt_ts)
         return algo
     if (name == "EXP2"):

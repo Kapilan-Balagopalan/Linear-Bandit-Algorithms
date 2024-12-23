@@ -1,6 +1,7 @@
 import numpy as np
 import ipdb
 from line_profiler import profile
+from queue import Queue
 
 def calc_gamma_LinZHU(N,d, delta):
     c_OPT = 4
@@ -22,6 +23,10 @@ def calc_eta_t_EXP2(t,d,K):
 
 def calc_sqrt_beta_det2(d,R,ridge,delta,S,logdetV):
   return (R * np.sqrt( logdetV - d*np.log(ridge) + np.log (1/(delta**2)) ) + np.sqrt(ridge) * S)**2
+
+def TS_calc_sqrt_beta_det2(d,R,ridge,delta,S,logdetV):
+  return (R * np.sqrt(np.log (1/(delta**2)) ) + np.sqrt(ridge) * S)**2
+
 
 def calc_sqrt_beta_det2_initial(R,ridge,delta,S):
   return (R * np.sqrt(np.log (1/(delta**2)) ) + np.sqrt(ridge) * S)**2
@@ -73,9 +78,9 @@ def receive_reward(chosen,theta_true, noise_sigma, A):
     #print(Arm_t.shape)
     #print(theta_true.shape)
     noise = np.random.normal(0,noise_sigma, 1)
-    #print(noise)
+   # print("Noise" , noise)
     reward = np.dot(A[chosen,:],theta_true)
-    #print(reward)
+    #print("Reward," , reward)
     final_reward = reward + noise
     #print(final_reward)
     return final_reward
@@ -89,6 +94,9 @@ class Bandit(object):
         raise NotImplementedError()
 
     def update(self):
+        raise NotImplementedError()
+
+    def update_delayed(self):
         raise NotImplementedError()
 
     def get_probability_arm(self):

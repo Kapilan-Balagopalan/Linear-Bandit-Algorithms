@@ -6,7 +6,7 @@ from Bandit_Env import *
 
 class Lin_SGMED(Bandit):
     ########################################
-    def __init__(self, X, R, S,N ,opt_coeff,emp_coeff, flags):
+    def __init__(self, X, R, S,N ,opt_coeff,emp_coeff,delay_switch,delay_time, flags):
         self.X = X
         self.R = R
         self.N = N

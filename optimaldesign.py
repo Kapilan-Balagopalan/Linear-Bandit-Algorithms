@@ -3,12 +3,13 @@ import matplotlib.pyplot as plt
 from arms_generator import sample_spherical
 from arms_generator import sample_random
 import numpy.linalg as la
+from line_profiler import profile
 
 
 def init():
     return 0
 
-
+@profile
 def volume_approx(X, i_init_arms=[], opt="default"):
     """
     initial volume estimation
@@ -80,13 +81,13 @@ def find_max_norm_arm(X,V_t_inv):
             max_lev_score = lev_score
             index_max_lev_score = i
     return index_max_lev_score, max_lev_score
-
+@profile
 def KY_BH_Sampling(X):
     i_init_arms = []
     accept = volume_approx(X, i_init_arms, opt="default")
     return accept
 
-
+@profile
 def optimal_design_algo(X):
     val_lambda = 0
     n,d = X.shape
@@ -104,7 +105,14 @@ def optimal_design_algo(X):
     counter = 0
     #print(accept)
     #print(np.linalg.det(V_t))
-    V_t_inv = np.linalg.inv(V_t)
+    try:
+        V_t_inv = np.linalg.inv(V_t)
+    except np.linalg.LinAlgError as err:
+        if 'Singular matrix' in str(err):
+            print("Here")
+        else:
+            raise
+
     max_arm_ind, max_lev_score = find_max_norm_arm(X, V_t_inv)
     x = X[max_arm_ind, :]
     while max_lev_score > 1:
@@ -118,6 +126,7 @@ def optimal_design_algo(X):
         accept = np.concatenate((accept,max_arm_ind), axis=None)
     return accept, counter
 
+@profile
 def optimal_probability(X, sVal_opt_design_arms):
     n,d = X.shape
     prob_dist = np.zeros((n,1))
@@ -126,9 +135,29 @@ def optimal_probability(X, sVal_opt_design_arms):
     prob_dist = prob_dist/len(sVal_opt_design_arms)
     return prob_dist
 
-def calc_q_opt_design(A):
+@profile
+def calc_q_opt_design_old(A):
     sVal_opt_design_arms, sampling_time = optimal_design_algo(A)
     prob_dist = optimal_probability(A, sVal_opt_design_arms)
+    return prob_dist
+
+def calc_q_opt_design(A):
+    threshold = 0.000001
+    cov_A = np.cov(A, rowvar=False)
+    eigenvalues, eigenvectors = np.linalg.eig(cov_A)
+    # Select eigenvectors with eigenvalues greater than the threshold
+    non_zero_indices = np.where(np.abs(eigenvalues) > threshold)[0]
+    non_zero_eigenvalues = eigenvalues[non_zero_indices]
+    selected_eigenvectors = eigenvectors[:, non_zero_indices]
+
+    #print(np.max(eigenvalues))
+    # Reconstruct the matrix with reduced dimensions
+    low_dimensional_vectors = np.dot(A, selected_eigenvectors)
+    low_dimensional_vectors = np.real(low_dimensional_vectors)
+    sVal_opt_design_arms, sampling_time = optimal_design_algo(low_dimensional_vectors)
+    if(len(sVal_opt_design_arms) == 0):
+        print("Here")
+    prob_dist = optimal_probability(low_dimensional_vectors, sVal_opt_design_arms)
     return prob_dist
 
 
